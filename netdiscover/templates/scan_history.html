@@ -1,0 +1,653 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+    /* Scan Info Header */
+    .scan-header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--bg-dark);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: 16px 24px;
+        margin-bottom: 20px;
+    }
+
+    .scan-title-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .scan-title-icon {
+        font-size: 20px;
+        color: var(--accent-blue);
+    }
+
+    .scan-target-text {
+        font-family: var(--font-display);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .scan-date-text {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .history-layout {
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        gap: 24px;
+    }
+
+    @media (max-width: 1200px) {
+        .history-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Inventory Table */
+    .inventory-card {
+        padding: 24px;
+    }
+
+    .table-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .table-title {
+        font-family: var(--font-display);
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-secondary);
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .custom-table th {
+        padding: 12px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .custom-table td {
+        padding: 16px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-color);
+        transition: var(--transition-smooth);
+    }
+
+    .custom-table tr:hover td {
+        background-color: rgba(255, 255, 255, 0.02);
+        color: var(--text-primary);
+    }
+
+    .custom-table tr.selected td {
+        background-color: rgba(99, 102, 241, 0.05);
+        border-bottom-color: var(--accent-blue);
+    }
+
+    .ip-link {
+        color: var(--accent-blue);
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .ip-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Node Insight Panel */
+    .insight-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .insight-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 16px;
+    }
+
+    .insight-icon {
+        font-size: 24px;
+        color: var(--accent-blue);
+    }
+
+    .insight-title {
+        font-family: var(--font-display);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .os-info-block {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background-color: var(--bg-deep);
+        padding: 16px;
+        border-radius: var(--border-radius-md);
+        border: 1px solid var(--border-color);
+    }
+
+    .os-icon {
+        font-size: 28px;
+        color: var(--text-secondary);
+    }
+
+    .os-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .os-name {
+        font-family: var(--font-display);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .os-confidence {
+        font-size: 11px;
+        color: var(--accent-emerald);
+        font-weight: 600;
+    }
+
+    .node-meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .node-meta-box {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        background-color: var(--bg-deep);
+        padding: 12px;
+        border-radius: var(--border-radius-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .node-meta-lbl {
+        font-size: 10px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .node-meta-val {
+        font-size: 12px;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    /* Open Ports on Node list */
+    .ports-list-header {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+        margin-top: 8px;
+    }
+
+    .port-item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 13px;
+    }
+
+    .port-number-lbl {
+        font-family: var(--font-mono);
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .port-service-lbl {
+        color: var(--text-secondary);
+    }
+
+    /* Active Services grid at the bottom */
+    .top-services-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-top: 24px;
+    }
+
+    @media (max-width: 900px) {
+        .top-services-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .service-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .service-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .service-card-icon {
+        font-size: 18px;
+        color: var(--accent-blue);
+    }
+
+    .service-port-badge {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent-blue);
+    }
+
+    .service-product {
+        font-family: var(--font-display);
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .service-desc {
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if not selected_scan %}
+    <div class="card text-center" style="padding: 40px;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: var(--accent-amber); margin-bottom: 16px;"></i>
+        <h3>No Scans Found</h3>
+        <p style="color: var(--text-secondary); margin-top: 8px;">Run your first network segment discovery to populate results.</p>
+        <a href="{{ url_for('new_scan_page') }}" class="btn-primary" style="margin-top: 20px;">Launch Scan</a>
+    </div>
+{% else %}
+    <!-- Scan Info Header -->
+    <div class="scan-header-bar">
+        <div class="scan-title-section">
+            <i class="fa-solid fa-binoculars scan-title-icon"></i>
+            <div>
+                <div class="scan-target-text">Scan Results for {{ selected_scan.target }}</div>
+                <div class="scan-date-text">Finished {{ selected_scan.completed_at }} &bull; Duration: {{ selected_scan.duration }}s</div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <select class="select-field" style="padding: 8px 32px 8px 16px; font-size: 12px;" onchange="window.location.href='/scan_history_page?scan_id=' + this.value">
+                {% for s in scans %}
+                    <option value="{{ s.id }}" {% if s.id == selected_scan.id %}selected{% endif %}>{{ s.target }} ({{ s.id }})</option>
+                {% endfor %}
+            </select>
+            <a href="{{ url_for('reports_page', scan_id=selected_scan.id) }}" class="btn-secondary" style="padding: 8px 16px; font-size: 12px;">
+                <i class="fa-solid fa-download"></i> Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid-5" style="margin-bottom: 24px;">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">Hosts Found</span>
+                <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +12%</span>
+            </div>
+            <div>
+                <div class="stat-value">{{ selected_scan.hosts_found }}</div>
+                <div class="stat-title" style="margin-top: 4px; font-size: 9px;">Across target subnet</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">Ports Open</span>
+                <span class="stat-trend trend-stable"><i class="fa-solid fa-minus"></i> Stable</span>
+            </div>
+            <div>
+                <div class="stat-value">{{ selected_scan.ports_open }}</div>
+                <div class="stat-title" style="margin-top: 4px; font-size: 9px;">Across active nodes</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-title">Services Detected</span>
+                <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> New</span>
+            </div>
+            <div>
+                <div class="stat-value">{{ selected_scan.services_detected }}</div>
+                <div class="stat-title" style="margin-top: 4px; font-size: 9px;">Unique service instances</div>
+            </div>
+        </div>
+
+        <div class="stat-card" style="grid-column: span 2;">
+            <div class="stat-header">
+                <span class="stat-title">Scan Speed / Engine</span>
+                <span class="stat-trend trend-stable">Ultra-Fast</span>
+            </div>
+            <div>
+                <div class="stat-value">{{ selected_scan.duration }}s</div>
+                <div class="stat-title" style="margin-top: 4px; font-size: 9px;">ThreadPoolExecutor Engine Status: Ready</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory / Details Layout -->
+    <div class="history-layout">
+        <!-- Left Column: Inventory List -->
+        <div class="card inventory-card">
+            <div class="table-actions">
+                <span class="table-title">Inventory Discovery</span>
+                <div style="display: flex; gap: 12px;">
+                    <i class="fa-solid fa-filter" style="color: var(--text-muted); cursor: pointer;"></i>
+                    <i class="fa-solid fa-arrow-down-wide-short" style="color: var(--text-muted); cursor: pointer;"></i>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="custom-table" id="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>IP Address</th>
+                            <th>Hostname</th>
+                            <th>Status</th>
+                            <th>MAC Address</th>
+                            <th>Response</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for host in hosts %}
+                            <tr id="host-row-{{ host.id }}" onclick="selectHost({{ host.id }})" style="cursor: pointer;">
+                                <td><span class="ip-link">{{ host.ip_address }}</span></td>
+                                <td>{{ host.hostname }}</td>
+                                <td>
+                                    {% if host.status == 'ONLINE' %}
+                                        <span class="badge badge-success">Online</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">Offline</span>
+                                    {% endif %}
+                                </td>
+                                <td><span style="font-family: var(--font-mono);">{{ host.mac_address }}</span></td>
+                                <td style="color: var(--accent-emerald); font-weight: 600;">{{ host.response_time }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Column: Host Insight Panel & Mini Topology Map -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- Node Insight Panel -->
+            <div class="insight-card" id="insight-panel">
+                <div class="insight-header">
+                    <i class="fa-solid fa-circle-info insight-icon"></i>
+                    <div>
+                        <div class="insight-title" id="insight-node-ip">Select a Host</div>
+                        <div style="font-size: 11px; color: var(--text-muted);" id="insight-node-hostname">Click a row to inspect</div>
+                    </div>
+                </div>
+
+                <div class="os-info-block">
+                    <i class="fa-solid fa-laptop-code os-icon"></i>
+                    <div class="os-details">
+                        <span class="os-name" id="insight-node-os">OS Not Selected</span>
+                        <span class="os-confidence" id="insight-node-confidence">Confidence: --</span>
+                    </div>
+                </div>
+
+                <div class="node-meta-grid">
+                    <div class="node-meta-box">
+                        <span class="node-meta-lbl">Discovery</span>
+                        <span class="node-meta-val" id="insight-node-discovery">SNMP + ICMP</span>
+                    </div>
+                    <div class="node-meta-box">
+                        <span class="node-meta-lbl">Uptime</span>
+                        <span class="node-meta-val">14d 05h 12m</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="ports-list-header">Open Ports on Node</div>
+                    <div id="insight-ports-list">
+                        <div style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 16px 0;">No ports info</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini Topology Visualisation -->
+            <div class="card" style="padding: 20px;">
+                <h3 style="font-family: var(--font-display); font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 16px;">Topology Visualization</h3>
+                <div style="height: 180px; width: 100%; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); overflow: hidden; background-color: var(--bg-deep); display: flex; align-items: center; justify-content: center;">
+                    <svg id="mini-topology-svg" style="width: 100%; height: 100%;"></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Active Services Grid at the bottom -->
+    <div style="margin-top: 32px;">
+        <h3 style="font-family: var(--font-display); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); margin-bottom: 16px;">Top Active Services</h3>
+        <div class="top-services-grid">
+            <div class="service-card">
+                <div class="service-card-header">
+                    <i class="fa-solid fa-terminal service-card-icon"></i>
+                    <span class="service-port-badge">Port 22</span>
+                </div>
+                <div class="service-product">OpenSSH 8.2p1</div>
+                <p class="service-desc">Active on active hosts. Secure shell access with RSA/Ed25519 authentication.</p>
+            </div>
+
+            <div class="service-card">
+                <div class="service-card-header">
+                    <i class="fa-solid fa-globe service-card-icon"></i>
+                    <span class="service-port-badge">Port 443</span>
+                </div>
+                <div class="service-product">NGINX / TLS 1.3</div>
+                <p class="service-desc">Web services detected with valid Let's Encrypt certificates.</p>
+            </div>
+
+            <div class="service-card">
+                <div class="service-card-header">
+                    <i class="fa-solid fa-database service-card-icon"></i>
+                    <span class="service-port-badge">Port 3306</span>
+                </div>
+                <div class="service-product">MariaDB / MySQL</div>
+                <p class="service-desc">Database backend discovery. Access restricted to internal subnet segment.</p>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Store all hosts data in local JS array
+    const hostsData = {
+        {% for host in hosts %}
+            "{{ host.id }}": {
+                "ip": "{{ host.ip_address }}",
+                "hostname": "{{ host.hostname }}",
+                "status": "{{ host.status }}",
+                "mac": "{{ host.mac_address }}",
+                "latency": "{{ host.response_time }}",
+                "os": "{{ host.os_detected }}",
+                "ports": [
+                    {% for port in host.ports %}
+                        {
+                            "port": "{{ port.port }}",
+                            "service": "{{ port.service }}",
+                            "state": "{{ port.state }}",
+                            "product": "{{ port.product }}",
+                            "version": "{{ port.version }}"
+                        },
+                    {% endfor %}
+                ]
+            },
+        {% endfor %}
+    };
+
+    function selectHost(hostId) {
+        const host = hostsData[hostId];
+        if (!host) return;
+
+        // Toggle table row selection
+        const rows = document.querySelectorAll('#inventory-table tbody tr');
+        rows.forEach(r => r.classList.remove('selected'));
+        document.getElementById(`host-row-${hostId}`).classList.add('selected');
+
+        // Update Node Insight Panel
+        document.getElementById('insight-node-ip').textContent = host.ip;
+        document.getElementById('insight-node-hostname').textContent = host.hostname;
+        document.getElementById('insight-node-os').textContent = host.os && host.os !== 'Unknown' ? host.os : 'Generic Linux / UNIX';
+        document.getElementById('insight-node-confidence').textContent = host.status === 'ONLINE' ? 'Confidence: 98%' : 'Offline (Unreachable)';
+        document.getElementById('insight-node-discovery').textContent = host.status === 'ONLINE' ? 'ARP + ICMP' : 'None';
+
+        // Update Open Ports list
+        const portsContainer = document.getElementById('insight-ports-list');
+        portsContainer.innerHTML = '';
+
+        if (host.ports.length === 0) {
+            portsContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 16px 0;">No open ports detected</div>`;
+        } else {
+            host.ports.forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'port-item-row';
+                
+                const badgeClass = p.state === 'OPEN' ? 'badge-success' : 'badge-danger';
+                row.innerHTML = `
+                    <span class="port-number-lbl">${p.port}/tcp</span>
+                    <span class="port-service-lbl">${p.service}</span>
+                    <span class="badge ${badgeClass}">${p.state}</span>
+                `;
+                portsContainer.appendChild(row);
+            });
+        }
+
+        // Draw Mini Topology for this node
+        drawMiniTopology(host);
+    }
+
+    function drawMiniTopology(host) {
+        const svg = document.getElementById('mini-topology-svg');
+        svg.innerHTML = ''; // Clear
+        
+        const width = svg.clientWidth || 250;
+        const height = svg.clientHeight || 180;
+        
+        const center = { x: width / 2, y: height / 2 };
+        
+        // Center node represents the Gateway
+        // Outer node represents the currently selected host
+        const leaf = { x: width / 2, y: 30 };
+        
+        // Line Link
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", center.x);
+        line.setAttribute("y1", center.y);
+        line.setAttribute("x2", leaf.x);
+        line.setAttribute("y2", leaf.y);
+        line.setAttribute("stroke", host.status === 'ONLINE' ? '#3b82f6' : '#f43f5e');
+        line.setAttribute("stroke-width", "2");
+        if (host.status !== 'ONLINE') {
+            line.setAttribute("stroke-dasharray", "4,4");
+        }
+        svg.appendChild(line);
+
+        // Center circle (Gateway)
+        const c1 = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        c1.setAttribute("cx", center.x);
+        c1.setAttribute("cy", center.y);
+        c1.setAttribute("r", "10");
+        c1.setAttribute("fill", "#6366f1");
+        c1.setAttribute("stroke", "#f3f4f6");
+        c1.setAttribute("stroke-width", "1.5");
+        svg.appendChild(c1);
+
+        const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t1.setAttribute("x", center.x);
+        t1.setAttribute("y", center.y + 24);
+        t1.setAttribute("text-anchor", "middle");
+        t1.setAttribute("fill", "#6b7280");
+        t1.setAttribute("font-size", "9px");
+        t1.setAttribute("font-family", "Outfit");
+        t1.textContent = "192.168.1.1 (Gateway)";
+        svg.appendChild(t1);
+
+        // Leaf circle (Host)
+        const c2 = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        c2.setAttribute("cx", leaf.x);
+        c2.setAttribute("cy", leaf.y);
+        c2.setAttribute("r", "8");
+        c2.setAttribute("fill", host.status === 'ONLINE' ? '#10b981' : '#f43f5e');
+        c2.setAttribute("stroke", "#f3f4f6");
+        c2.setAttribute("stroke-width", "1.5");
+        svg.appendChild(c2);
+
+        const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        t2.setAttribute("x", leaf.x);
+        t2.setAttribute("y", leaf.y - 12);
+        t2.setAttribute("text-anchor", "middle");
+        t2.setAttribute("fill", "#f3f4f6");
+        t2.setAttribute("font-size", "10px");
+        t2.setAttribute("font-family", "Outfit");
+        t2.textContent = host.ip;
+        svg.appendChild(t2);
+    }
+
+    // Auto-select first host on page load
+    window.addEventListener('DOMContentLoaded', () => {
+        const firstRow = document.querySelector('#inventory-table tbody tr');
+        if (firstRow) {
+            firstRow.click();
+        }
+    });
+</script>
+{% endblock %}

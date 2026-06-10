@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+    .reports-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .reports-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+        .reports-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .report-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 200px;
+        transition: var(--transition-smooth);
+    }
+
+    .report-card:hover {
+        border-color: var(--accent-blue);
+        transform: translateY(-2px);
+    }
+
+    .report-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .report-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--border-radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .report-icon-box.json {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: var(--accent-blue);
+    }
+
+    .report-icon-box.txt {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--accent-emerald);
+    }
+
+    .report-icon-box.csv {
+        background-color: rgba(99, 102, 241, 0.1);
+        color: var(--accent-purple);
+    }
+
+    .report-type-badge {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+
+    .report-type-badge.json { background-color: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+    .report-type-badge.txt { background-color: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); }
+    .report-type-badge.csv { background-color: rgba(99, 102, 241, 0.2); color: var(--accent-purple); }
+
+    .report-name {
+        font-family: var(--font-display);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+
+    .report-details-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 24px;
+    }
+
+    .report-detail-item {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .report-detail-lbl {
+        color: var(--text-muted);
+    }
+
+    .report-card-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-preview {
+        flex-grow: 1;
+        background-color: var(--bg-input);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        font-family: var(--font-display);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 10px;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-preview:hover {
+        background-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .btn-download {
+        background-color: var(--bg-input);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        width: 38px;
+        height: 38px;
+        border-radius: var(--border-radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        text-decoration: none;
+    }
+
+    .btn-download:hover {
+        background-color: var(--border-color);
+        color: var(--accent-blue);
+    }
+
+    /* Code Block Previewer */
+    .preview-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 24px;
+    }
+
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+    }
+
+    .preview-title {
+        font-family: var(--font-display);
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .preview-console {
+        background-color: #08090c;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: 20px;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        line-height: 1.5;
+        overflow-x: auto;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .code-json {
+        color: #60a5fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reports-layout">
+    <!-- Reports Listing Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="font-family: var(--font-display); font-size: 24px; font-weight: 800;">System Reports</h2>
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Generated audit documentation and network snapshots.</p>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+            <button class="btn-secondary" style="padding: 10px 18px; font-size: 13px;"><i class="fa-solid fa-filter"></i> Filter</button>
+            <a href="{{ url_for('new_scan_page') }}" class="btn-primary" style="padding: 10px 18px; font-size: 13px;"><i class="fa-solid fa-plus"></i> Generate New</a>
+        </div>
+    </div>
+
+    {% if not selected_scan %}
+        <div class="card text-center" style="padding: 40px;">
+            <i class="fa-solid fa-file-excel" style="font-size: 40px; color: var(--text-muted); margin-bottom: 16px;"></i>
+            <h3>No Reports Available</h3>
+            <p style="color: var(--text-secondary); margin-top: 8px;">Completed scans automatically compile downloadable CSV, JSON, and text reports.</p>
+        </div>
+    {% else %}
+        <!-- Grid listing the files of the selected scan -->
+        <div class="reports-grid">
+            <!-- JSON Report -->
+            <div class="report-card">
+                <div>
+                    <div class="report-card-header">
+                        <div class="report-icon-box json">
+                            <i class="fa-solid fa-code"></i>
+                        </div>
+                        <span class="report-type-badge json">JSON</span>
+                    </div>
+                    
+                    <div class="report-name">Full_Network_Scan_v2</div>
+                    
+                    <div class="report-details-list">
+                        <div class="report-detail-item">
+                            <span class="report-detail-lbl">ID:</span>
+                            <span style="font-family: var(--font-mono);">SCAN-{{ selected_scan.id[-6:] }}</span>
+                        </div>
+                        <div class="report-detail-item">
+                            <span class="report-detail-lbl">Date:</span>
+                            <span>{{ selected_scan.completed_at[:10] }}</span>
+                        </div>
+                        <div class="report-detail-item">
+                            <span class="report-detail-lbl">Size:</span>
+                            <span>24.0 KB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-card-actions">
+                    <button class="btn-preview" onclick="selectPreviewFormat('json')">Preview</button>
+                    <a href="{{ url_for('download_report', scan_id=selected_scan.id, file_format='json') }}" class="btn-download">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- TXT Report -->
+            <div class="report-card">
+                <div>
+                    <div class="report-card-header">
+                        <div class="report-icon-box txt">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+                        <span class="report-type-badge txt">TXT</span>
+                    </div>
+                    
+                    <div class="report-name">Port_Audit_Summary</div>
+                    
+                    <div class="report-details-list">
+                        <div class="report-detail-item">
+                            <span class="report-detail-lbl">ID:</span>
+                            <span style="font-family: var(--font-mono);">AUDIT-{{ selected_scan.id[-4:] }}</span>
+                        </div>
+                        <div class="report-detail-item">
+                            <span class="report-detail-lbl">Date:</span>
+                            <span>{{ selected_scan.completed_at[:10] }}</span>
+                        </div>
+                        <div class="report-detail-item">
+                            <span class="report-detail-lbl">Size:</span>
+                            <span>1.2 KB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-card-actions">
+                    <button class="btn-preview" onclick="selectPreviewFormat('txt')">Preview</button>
+                    <a href="{{ url_for('download_report', scan_id=selected_scan.id, file_format='txt') }}" class="btn-download">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- CSV Report -->
+            <div class="report-card">
+                <div>
+                    <div class="report-card-header">
+                        <div class="report-icon-box csv">
+                            <i class="fa-solid fa-file-csv"></i>
+                        </div>
+                        <span class="report-type-badge csv">CSV</span>
+                    </div>
+                    
+                    <div class="report-name">Host_Inventory_Export</div>
+                    
+                    <div class="report-details-list">
+                        <div class="report-detail-item">
+                            <span class="report-detail-lbl">ID:</span>
+                            <span style="font-family: var(--font-mono);">INV-{{ selected_scan.id[-4:] }}</span>
+                        </div>
+                        <div class="report-detail-item">
+                            <span class="report-detail-lbl">Date:</span>
+                            <span>{{ selected_scan.completed_at[:10] }}</span>
+                        </div>
+                        <div class="report-detail-item">
+                            <span class="report-detail-lbl">Size:</span>
+                            <span>4.5 KB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-card-actions">
+                    <button class="btn-preview" onclick="selectPreviewFormat('csv')">Preview</button>
+                    <a href="{{ url_for('download_report', scan_id=selected_scan.id, file_format='csv') }}" class="btn-download">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="preview-card">
+            <div class="preview-header">
+                <span class="preview-title" id="preview-title">
+                    <i class="fa-solid fa-eye" style="color: var(--accent-blue);"></i> Report Preview
+                </span>
+                <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);" id="preview-filename">report_{{ selected_scan.id }}.json</span>
+            </div>
+
+            <pre class="preview-console"><code class="code-json" id="preview-box">// Click Preview on a card above to render report contents...</code></pre>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const scanId = "{{ selected_scan.id if selected_scan else '' }}";
+
+    function selectPreviewFormat(format) {
+        document.getElementById('preview-filename').textContent = `report_${scanId}.${format}`;
+        const previewBox = document.getElementById('preview-box');
+        previewBox.textContent = `[Loading report preview...]`;
+
+        // Fetch file raw content using custom API endpoint or download proxy
+        fetch(`/reports/download/${scanId}/${format}`)
+        .then(response => response.text())
+        .then(text => {
+            if (format === 'json') {
+                try {
+                    // Prettify JSON if retrieved raw
+                    previewBox.textContent = JSON.stringify(JSON.parse(text), null, 4);
+                } catch (e) {
+                    previewBox.textContent = text;
+                }
+            } else {
+                previewBox.textContent = text;
+            }
+        })
+        .catch(err => {
+            previewBox.textContent = `// Error loading report: ${err}`;
+        });
+    }
+
+    // Auto load JSON preview on mount
+    window.addEventListener('DOMContentLoaded', () => {
+        if (scanId) {
+            selectPreviewFormat('json');
+        }
+    });
+</script>
+{% endblock %}

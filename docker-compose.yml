@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  netdiscover:
+    build: .
+    container_name: netdiscover_scanner
+    # Run container using host network mode so ARP scans can broadcast on local interfaces.
+    # If running on macOS or Windows, host mode is not supported; in that case,
+    # port binding is fallback, but since the user is on Linux, network_mode: host is ideal!
+    network_mode: host
+    restart: unless-stopped
+    # Grant net_admin capability for raw sockets (ARP broadcast)
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PORT=5000
+    volumes:
+      - ./reports:/app/reports
+      - ./netdiscover.db:/app/netdiscover.db

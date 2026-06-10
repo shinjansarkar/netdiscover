@@ -1,0 +1,44 @@
+{
+    "report_id": "SCAN-6D4D26",
+    "timestamp": "2026-06-11T00:40:26.452550",
+    "metadata": {
+        "target": "127.0.0.1",
+        "scan_type": "BOTH Scan (top100)",
+        "status": "COMPLETED",
+        "duration_seconds": 4.0310750007629395,
+        "hosts_found": 1
+    },
+    "hosts": [
+        {
+            "ip": "127.0.0.1",
+            "hostname": "localhost",
+            "status": "ONLINE",
+            "mac": "Unknown",
+            "response_time": "0.03ms",
+            "os": "Linux/Unix",
+            "open_ports": [
+                {
+                    "port": 631,
+                    "service": "Unknown",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                },
+                {
+                    "port": 5000,
+                    "service": "Unknown",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                },
+                {
+                    "port": 5432,
+                    "service": "PostgreSQL",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                }
+            ]
+        }
+    ]
+}

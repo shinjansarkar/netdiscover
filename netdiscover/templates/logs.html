@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+    .logs-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Filters Bar */
+    .logs-filters {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: 16px 24px;
+        gap: 16px;
+    }
+
+    .filters-left {
+        display: flex;
+        gap: 12px;
+        flex-grow: 1;
+        max-width: 60%;
+    }
+
+    .filters-right {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Live Feed Card */
+    .live-feed-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .feed-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 16px;
+        margin-bottom: 20px;
+    }
+
+    .feed-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .feed-status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--accent-emerald);
+        box-shadow: 0 0 8px var(--accent-emerald);
+        animation: pulse 1.5s infinite;
+    }
+
+    .feed-actions {
+        display: flex;
+        gap: 12px;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .feed-action-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .feed-action-btn:hover {
+        color: var(--text-primary);
+    }
+
+    /* System CLI Logger Table */
+    .log-table-container {
+        max-height: 480px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        background-color: #08090c;
+    }
+
+    .log-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-family: var(--font-mono);
+        font-size: 12px;
+    }
+
+    .log-table th {
+        background-color: #10121a;
+        padding: 12px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .log-table td {
+        padding: 12px 16px;
+        color: var(--text-secondary);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .log-table tr:hover td {
+        background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    .log-time-col {
+        color: var(--text-muted);
+        white-space: nowrap;
+        width: 180px;
+    }
+
+    .log-level-col {
+        width: 80px;
+        font-weight: 700;
+    }
+
+    .log-level-col.info { color: #a3e635; }
+    .log-level-col.warning { color: #facc15; }
+    .log-level-col.error { color: #f87171; }
+
+    .log-source-col {
+        color: var(--accent-blue);
+        width: 150px;
+    }
+
+    /* CLI Prompt Footer */
+    .shell-prompt-footer {
+        background-color: #050608;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        padding: 16px;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .prompt-user {
+        color: var(--accent-emerald);
+        font-weight: 700;
+    }
+
+    .prompt-cmd {
+        color: var(--text-primary);
+    }
+
+    .prompt-cursor {
+        width: 8px;
+        height: 15px;
+        background-color: var(--accent-emerald);
+        display: inline-block;
+        animation: blink 1s infinite step-start;
+    }
+
+    @keyframes blink {
+        50% { opacity: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logs-layout">
+    <!-- Log Header -->
+    <div>
+        <h2 style="font-family: var(--font-display); font-size: 24px; font-weight: 800;">Live System Logs</h2>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Auditing scan worker queues, socket events, and warning reports.</p>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="logs-filters">
+        <div class="filters-left">
+            <div class="search-container" style="width: 100%;">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="log-search-input" class="search-input" placeholder="Search system logs message..." oninput="filterLogs()">
+            </div>
+        </div>
+        
+        <div class="filters-right">
+            <select class="select-field" id="log-level-select" style="padding: 10px 32px 10px 16px;" onchange="filterLogs()">
+                <option value="ALL">All Levels</option>
+                <option value="INFO">INFO</option>
+                <option value="WARNING">WARNING</option>
+                <option value="ERROR">ERROR</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Live Log Table Card -->
+    <div class="live-feed-card">
+        <div class="feed-header">
+            <div class="feed-status">
+                <span class="feed-status-dot"></span>
+                <span style="color: var(--accent-emerald); font-weight: 700;">Live Streaming</span>
+                <span style="color: var(--text-muted); margin-left: 8px;" id="entry-count-text">Showing 9 entries</span>
+            </div>
+            
+            <div class="feed-actions">
+                <button class="feed-action-btn" onclick="refreshLogs()"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+                <span style="color: var(--border-color);">|</span>
+                <button class="feed-action-btn" onclick="clearLogs()"><i class="fa-solid fa-trash-can"></i> Clear Screen</button>
+            </div>
+        </div>
+
+        <div class="log-table-container">
+            <table class="log-table" id="log-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Level</th>
+                        <th>Source</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody id="log-table-body">
+                    {% for log in logs %}
+                        <tr class="log-row" data-level="{{ log.level }}" data-message="{{ log.message }}">
+                            <td class="log-time-col">{{ log.timestamp }}</td>
+                            <td class="log-level-col {{ log.level.lower() }}">{{ log.level }}</td>
+                            <td class="log-source-col">{{ log.source }}</td>
+                            <td>{{ log.message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Shell prompt -->
+    <div class="shell-prompt-footer">
+        <span class="prompt-user">netdiscover-shell:~$</span>
+        <span class="prompt-cmd">tail -f /var/log/discovery.log</span>
+        <span class="prompt-cursor"></span>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function refreshLogs() {
+        const tbody = document.getElementById('log-table-body');
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Fetching system events...</td></tr>`;
+
+        fetch('/api/logs?limit=100')
+        .then(response => response.json())
+        .then(logs => {
+            tbody.innerHTML = '';
+            document.getElementById('entry-count-text').textContent = `Showing ${logs.length} entries`;
+            
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+                row.className = 'log-row';
+                row.setAttribute('data-level', log.level);
+                row.setAttribute('data-message', log.message);
+                
+                row.innerHTML = `
+                    <td class="log-time-col">${log.timestamp}</td>
+                    <td class="log-level-col ${log.level.toLowerCase()}">${log.level}</td>
+                    <td class="log-source-col">${log.source}</td>
+                    <td>${log.message}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            filterLogs(); // Reapply active filters
+        })
+        .catch(err => {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--accent-rose);">Error retrieving logs: ${err}</td></tr>`;
+        });
+    }
+
+    function clearLogs() {
+        document.getElementById('log-table-body').innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Logs cleared from screen. Click Refresh to reload.</td></tr>`;
+        document.getElementById('entry-count-text').textContent = `Showing 0 entries`;
+    }
+
+    function filterLogs() {
+        const keyword = document.getElementById('log-search-input').value.toLowerCase();
+        const selectedLevel = document.getElementById('log-level-select').value;
+        const rows = document.querySelectorAll('.log-row');
+
+        let visibleCount = 0;
+        rows.forEach(row => {
+            const level = row.getAttribute('data-level');
+            const message = row.getAttribute('data-message').toLowerCase();
+            
+            const levelMatches = (selectedLevel === 'ALL' || level === selectedLevel);
+            const keywordMatches = (!keyword || message.includes(keyword));
+
+            if (levelMatches && keywordMatches) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('entry-count-text').textContent = `Showing ${visibleCount} entries`;
+    }
+
+    // Auto update live logs feed every 5 seconds
+    setInterval(() => {
+        // Only trigger update if user is not actively searching, to prevent UI jumping
+        const isSearching = document.getElementById('log-search-input').value.length > 0;
+        if (!isSearching) {
+            refreshLogs();
+        }
+    }, 5000);
+</script>
+{% endblock %}

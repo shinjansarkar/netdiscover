@@ -1,0 +1,802 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+    /* Hero Section */
+    .hero-card {
+        background: linear-gradient(135deg, #1e1b4b 0%, #111827 100%);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 40px;
+    }
+
+    .hero-content {
+        max-width: 60%;
+    }
+
+    .hero-title {
+        font-family: var(--font-display);
+        font-size: 32px;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 12px;
+        background: linear-gradient(to right, var(--text-primary), var(--accent-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+        color: var(--text-secondary);
+        font-size: 15px;
+        line-height: 1.5;
+        margin-bottom: 24px;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 16px;
+    }
+
+    .btn-primary {
+        background-color: var(--accent-blue);
+        color: var(--text-primary);
+        font-family: var(--font-display);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 12px 24px;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563eb;
+        box-shadow: 0 4px 18px rgba(59, 130, 246, 0.5);
+    }
+
+    .btn-secondary {
+        background-color: transparent;
+        color: var(--text-primary);
+        font-family: var(--font-display);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 12px 24px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--bg-card);
+        border-color: var(--text-muted);
+    }
+
+    .hero-illustration {
+        width: 140px;
+        height: 140px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .circle-glow {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 2px dashed rgba(99, 102, 241, 0.2);
+        border-radius: 50%;
+        animation: spin 30s linear infinite;
+    }
+
+    .circle-glow-inner {
+        position: absolute;
+        width: 75%;
+        height: 75%;
+        border: 1px solid rgba(59, 130, 246, 0.4);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+    }
+
+    .circle-icon {
+        font-size: 32px;
+        color: var(--accent-blue);
+        animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes spin {
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.1); opacity: 1; }
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        padding: 20px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 120px;
+        transition: var(--transition-smooth);
+    }
+
+    .stat-card:hover {
+        border-color: var(--accent-blue);
+        transform: translateY(-2px);
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .stat-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+    }
+
+    .stat-trend {
+        font-size: 11px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .trend-up { color: var(--accent-emerald); }
+    .trend-down { color: var(--accent-rose); }
+    .trend-stable { color: var(--accent-blue); }
+
+    .stat-value {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+
+    .stat-mini-chart {
+        height: 20px;
+        display: flex;
+        align-items: flex-end;
+        gap: 3px;
+    }
+
+    .chart-bar {
+        width: 4px;
+        background-color: var(--border-color);
+        border-radius: 2px;
+        transition: var(--transition-smooth);
+    }
+
+    .stat-card:hover .chart-bar {
+        background-color: var(--accent-blue);
+    }
+
+    /* Dashboard Grid Section */
+    .dashboard-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .dashboard-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Health Overview Card */
+    .chart-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 16px 0;
+        gap: 20px;
+    }
+
+    .donut-container {
+        position: relative;
+        width: 150px;
+        height: 150px;
+    }
+
+    .donut-svg {
+        transform: rotate(-90deg);
+    }
+
+    .donut-bg {
+        fill: none;
+        stroke: var(--bg-deep);
+        stroke-width: 12;
+    }
+
+    .donut-fill {
+        fill: none;
+        stroke: var(--accent-emerald);
+        stroke-width: 12;
+        stroke-dasharray: 440;
+        stroke-dashoffset: 44; /* Calculates to 90% */
+        stroke-linecap: round;
+        transition: var(--transition-smooth);
+    }
+
+    .donut-text-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .donut-percentage {
+        font-family: var(--font-display);
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .donut-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .health-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        flex-grow: 1;
+        max-width: 250px;
+    }
+
+    .health-stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+    }
+
+    .health-stat-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .health-stat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .health-stat-value {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    /* Coverage Section */
+    .coverage-section {
+        margin-top: 24px;
+        border-top: 1px solid var(--border-color);
+        padding-top: 20px;
+    }
+
+    .coverage-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+    }
+
+    .progress-bar-container {
+        margin-bottom: 12px;
+    }
+
+    .progress-bar-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+    }
+
+    .progress-bar-track {
+        height: 6px;
+        background-color: var(--bg-deep);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background-color: var(--accent-blue);
+        border-radius: 3px;
+        transition: var(--transition-smooth);
+    }
+
+    /* Scan Activity Timeline */
+    .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: relative;
+        padding-left: 20px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 4px;
+        width: 1px;
+        background-color: var(--border-color);
+    }
+
+    .timeline-item {
+        position: relative;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: -20px;
+        top: 4px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--accent-emerald);
+        border: 2px solid var(--bg-card);
+    }
+
+    .timeline-dot.alert {
+        background-color: var(--accent-rose);
+    }
+
+    .timeline-dot.backup {
+        background-color: var(--accent-blue);
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .timeline-title {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .timeline-time {
+        color: var(--text-muted);
+    }
+
+    .timeline-desc {
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    /* Topology Canvas */
+    .topology-card {
+        margin-top: 24px;
+    }
+
+    .topology-placeholder {
+        height: 220px;
+        border: 1px dashed var(--border-color);
+        border-radius: var(--border-radius-md);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--bg-deep);
+        gap: 16px;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+
+    .topology-placeholder:hover {
+        border-color: var(--accent-blue);
+        background-color: rgba(59, 130, 246, 0.02);
+    }
+
+    .topology-icon {
+        font-size: 36px;
+        color: var(--accent-blue);
+    }
+
+    .topology-title {
+        font-family: var(--font-display);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .topology-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-align: center;
+        max-width: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="card hero-card">
+    <div class="hero-content">
+        <h1 class="hero-title">Network Discovery & Service Enumeration</h1>
+        <p class="hero-desc">Scan, Analyze, and Monitor Network Infrastructure across your global environment with real-time intelligence.</p>
+        <div class="hero-actions">
+            <a href="{{ url_for('new_scan_page') }}" class="btn-primary">
+                <i class="fa-solid fa-rocket"></i> Start New Scan
+            </a>
+            <a href="{{ url_for('reports_page') }}" class="btn-secondary">
+                View Reports
+            </a>
+        </div>
+    </div>
+    <div class="hero-illustration">
+        <div class="circle-glow"></div>
+        <div class="circle-glow-inner">
+            <i class="fa-solid fa-fingerprint circle-icon"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="grid-5">
+    <!-- Total Scans -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Total Scans</span>
+            <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +12%</span>
+        </div>
+        <div>
+            <div class="stat-value">{{ stats.total_scans }}</div>
+            <div class="stat-mini-chart">
+                <div class="chart-bar" style="height: 40%"></div>
+                <div class="chart-bar" style="height: 60%"></div>
+                <div class="chart-bar" style="height: 50%"></div>
+                <div class="chart-bar" style="height: 80%"></div>
+                <div class="chart-bar" style="height: 95%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Hosts -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Active Hosts</span>
+            <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +3</span>
+        </div>
+        <div>
+            <div class="stat-value">{{ stats.active_hosts }}</div>
+            <div class="stat-mini-chart">
+                <div class="chart-bar" style="height: 30%"></div>
+                <div class="chart-bar" style="height: 50%"></div>
+                <div class="chart-bar" style="height: 40%"></div>
+                <div class="chart-bar" style="height: 70%"></div>
+                <div class="chart-bar" style="height: 85%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Open Ports -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Open Ports</span>
+            <span class="stat-trend trend-stable"><i class="fa-solid fa-minus"></i> Stable</span>
+        </div>
+        <div>
+            <div class="stat-value">{{ stats.open_ports }}</div>
+            <div class="stat-mini-chart">
+                <div class="chart-bar" style="height: 70%"></div>
+                <div class="chart-bar" style="height: 70%"></div>
+                <div class="chart-bar" style="height: 70%"></div>
+                <div class="chart-bar" style="height: 70%"></div>
+                <div class="chart-bar" style="height: 70%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Identified -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Services Identified</span>
+            <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +5.2%</span>
+        </div>
+        <div>
+            <div class="stat-value">{{ stats.services_identified }}</div>
+            <div class="stat-mini-chart">
+                <div class="chart-bar" style="height: 20%"></div>
+                <div class="chart-bar" style="height: 40%"></div>
+                <div class="chart-bar" style="height: 35%"></div>
+                <div class="chart-bar" style="height: 60%"></div>
+                <div class="chart-bar" style="height: 80%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Last Scan Duration -->
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Last Scan Duration</span>
+            <span class="stat-trend trend-down"><i class="fa-solid fa-arrow-trend-down"></i> -14ms</span>
+        </div>
+        <div>
+            <div class="stat-value">{{ stats.last_scan_duration }}</div>
+            <div class="stat-mini-chart">
+                <div class="chart-bar" style="height: 90%"></div>
+                <div class="chart-bar" style="height: 80%"></div>
+                <div class="chart-bar" style="height: 65%"></div>
+                <div class="chart-bar" style="height: 50%"></div>
+                <div class="chart-bar" style="height: 40%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Layout Grid -->
+<div class="dashboard-layout">
+    <!-- Left Column: Health & Progress -->
+    <div>
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 600;">Network Health Overview</h3>
+                <a href="#" style="font-size: 11px; font-weight: 700; color: var(--accent-blue); text-decoration: none; text-transform: uppercase;">Download Map</a>
+            </div>
+            
+            <div class="chart-box">
+                <!-- Circular CSS Donut -->
+                <div class="donut-container">
+                    <svg class="donut-svg" width="150" height="150">
+                        <circle class="donut-bg" cx="75" cy="75" r="70"></circle>
+                        <circle class="donut-fill" cx="75" cy="75" r="70"></circle>
+                    </svg>
+                    <div class="donut-text-container">
+                        <div class="donut-percentage">92%</div>
+                        <div class="donut-label">Optimal</div>
+                    </div>
+                </div>
+
+                <!-- Status Labels -->
+                <div class="health-stats">
+                    <div class="health-stat-item">
+                        <div class="health-stat-label">
+                            <span class="health-stat-dot" style="background-color: var(--accent-emerald);"></span> Active
+                        </div>
+                        <div class="health-stat-value">742</div>
+                    </div>
+                    <div class="health-stat-item">
+                        <div class="health-stat-label">
+                            <span class="health-stat-dot" style="background-color: var(--text-muted);"></span> Inactive
+                        </div>
+                        <div class="health-stat-value">82</div>
+                    </div>
+                    <div class="health-stat-item">
+                        <div class="health-stat-label">
+                            <span class="health-stat-dot" style="background-color: var(--accent-rose);"></span> Critical
+                        </div>
+                        <div class="health-stat-value">18</div>
+                    </div>
+                    <div class="health-stat-item">
+                        <div class="health-stat-label">
+                            <span class="health-stat-dot" style="background-color: var(--accent-amber);"></span> Unknown
+                        </div>
+                        <div class="health-stat-value">250</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress segment exposure bars -->
+            <div class="coverage-section">
+                <div class="coverage-title">Network Coverage Progress</div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar-label">
+                        <span>Global LAN Segments</span>
+                        <strong>88%</strong>
+                    </div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" style="width: 88%"></div>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar-label">
+                        <span>DMZ Service Exposure</span>
+                        <strong>100%</strong>
+                    </div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" style="width: 100%; background-color: var(--accent-emerald);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Recent Activity -->
+    <div>
+        <div class="card" style="height: 100%;">
+            <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 600; margin-bottom: 24px;">Scan Activity</h3>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <span class="timeline-dot"></span>
+                    <div class="timeline-header">
+                        <span class="timeline-title">Subnet A-14 Scan Complete</span>
+                        <span class="timeline-time">09:42 AM</span>
+                    </div>
+                    <p class="timeline-desc">42 new devices identified, 2 unknown services flagged for review.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="timeline-dot alert"></span>
+                    <div class="timeline-header">
+                        <span class="timeline-title">Alert: Unauthorized Host</span>
+                        <span class="timeline-time">08:15 AM</span>
+                    </div>
+                    <p class="timeline-desc">MAC Address mismatch detected on Secure-VLAN-04. Device isolated.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <span class="timeline-dot backup"></span>
+                    <div class="timeline-header">
+                        <span class="timeline-title">Scheduled Backup Finished</span>
+                        <span class="timeline-time">04:00 AM</span>
+                    </div>
+                    <p class="timeline-desc">Full database snapshot verified and stored in encrypted vault.</p>
+                </div>
+            </div>
+
+            <a href="{{ url_for('logs_page') }}" style="display: block; width: 100%; text-align: center; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); color: var(--text-primary); text-decoration: none; padding: 12px; margin-top: 32px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: var(--transition-smooth);">
+                View Full Audit Log
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Topology Card -->
+<div class="card topology-card">
+    <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 600; margin-bottom: 16px;">Live Topology View</h3>
+    <div class="topology-placeholder" id="topology-container">
+        <i class="fa-solid fa-circle-nodes topology-icon"></i>
+        <div class="topology-title">Interactive Node Explorer</div>
+        <p class="topology-desc">Render dynamic node relationships of the latest scanned segment</p>
+        <button class="btn-primary" style="padding: 8px 16px; font-size: 12px;" onclick="loadInteractiveTopology()">Enable Topology Map</button>
+    </div>
+    <div id="topology-canvas-container" style="display: none; height: 300px; width: 100%;">
+        <svg id="topology-svg" style="width: 100%; height: 100%; background-color: var(--bg-deep); border-radius: var(--border-radius-md); border: 1px solid var(--border-color);"></svg>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function loadInteractiveTopology() {
+        document.getElementById('topology-container').style.display = 'none';
+        const canvasContainer = document.getElementById('topology-canvas-container');
+        canvasContainer.style.display = 'block';
+        
+        const svg = document.getElementById('topology-svg');
+        svg.innerHTML = ''; // Clear
+        
+        // Let's draw a beautiful SVG tree/topology matching the image
+        // The image shows nodes: 1 center node (Gateway) connected to 4 leaf nodes
+        const width = canvasContainer.clientWidth;
+        const height = canvasContainer.clientHeight;
+        
+        // Gateway Node (Center)
+        const gateway = { x: width / 2, y: height / 2, label: "Gateway\n192.168.1.1", ip: "192.168.1.1" };
+        
+        // Leaves
+        const leaves = [
+            { x: width / 4, y: height / 4, ip: "192.168.1.105", label: "Dev-Worker-03" },
+            { x: (width * 3) / 4, y: height / 4, ip: "192.168.1.108", label: "Legacy-NAS (Offline)", offline: true },
+            { x: width / 4, y: (height * 3) / 4, ip: "192.168.1.201", label: "Corporate-Laptop" },
+            { x: (width * 3) / 4, y: (height * 3) / 4, ip: "192.168.1.55", label: "IoT-Printer" }
+        ];
+        
+        // Draw Links
+        leaves.forEach(leaf => {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", gateway.x);
+            line.setAttribute("y1", gateway.y);
+            line.setAttribute("x2", leaf.x);
+            line.setAttribute("y2", leaf.y);
+            line.setAttribute("stroke", leaf.offline ? "#f43f5e" : "#3b82f6");
+            line.setAttribute("stroke-width", "2");
+            line.setAttribute("stroke-dasharray", leaf.offline ? "4,4" : "0");
+            svg.appendChild(line);
+        });
+        
+        // Draw Gateway Node
+        const gatewayG = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        
+        const gatewayCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        gatewayCircle.setAttribute("cx", gateway.x);
+        gatewayCircle.setAttribute("cy", gateway.y);
+        gatewayCircle.setAttribute("r", "16");
+        gatewayCircle.setAttribute("fill", "#6366f1");
+        gatewayCircle.setAttribute("stroke", "#f3f4f6");
+        gatewayCircle.setAttribute("stroke-width", "2");
+        gatewayG.appendChild(gatewayCircle);
+        
+        const gatewayText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        gatewayText.setAttribute("x", gateway.x);
+        gatewayText.setAttribute("y", gateway.y + 28);
+        gatewayText.setAttribute("text-anchor", "middle");
+        gatewayText.setAttribute("fill", "#f3f4f6");
+        gatewayText.setAttribute("font-size", "11px");
+        gatewayText.setAttribute("font-family", "Outfit");
+        gatewayText.textContent = "192.168.1.1 (Gateway)";
+        gatewayG.appendChild(gatewayText);
+        
+        svg.appendChild(gatewayG);
+        
+        // Draw Leaf Nodes
+        leaves.forEach(leaf => {
+            const leafG = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            
+            const leafCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            leafCircle.setAttribute("cx", leaf.x);
+            leafCircle.setAttribute("cy", leaf.y);
+            leafCircle.setAttribute("r", "10");
+            leafCircle.setAttribute("fill", leaf.offline ? "#f43f5e" : "#10b981");
+            leafCircle.setAttribute("stroke", "#f3f4f6");
+            leafCircle.setAttribute("stroke-width", "1.5");
+            leafG.appendChild(leafCircle);
+            
+            const leafText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            leafText.setAttribute("x", leaf.x);
+            leafText.setAttribute("y", leaf.y + 20);
+            leafText.setAttribute("text-anchor", "middle");
+            leafText.setAttribute("fill", "#9ca3af");
+            leafText.setAttribute("font-size", "10px");
+            leafText.setAttribute("font-family", "Outfit");
+            leafText.textContent = `${leaf.ip} (${leaf.label})`;
+            leafG.appendChild(leafText);
+            
+            svg.appendChild(leafG);
+        });
+    }
+</script>
+{% endblock %}

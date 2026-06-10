@@ -1,0 +1,44 @@
+{
+    "report_id": "SCAN-F538CC",
+    "timestamp": "2026-06-11T00:40:14.325606",
+    "metadata": {
+        "target": "127.0.0.1/32",
+        "scan_type": "ICMP Scan (top100)",
+        "status": "COMPLETED",
+        "duration_seconds": 4.034018278121948,
+        "hosts_found": 1
+    },
+    "hosts": [
+        {
+            "ip": "127.0.0.1",
+            "hostname": "localhost",
+            "status": "ONLINE",
+            "mac": "Unknown",
+            "response_time": "0.05ms",
+            "os": "Linux/Unix",
+            "open_ports": [
+                {
+                    "port": 631,
+                    "service": "Unknown",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                },
+                {
+                    "port": 5000,
+                    "service": "Unknown",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                },
+                {
+                    "port": 5432,
+                    "service": "PostgreSQL",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                }
+            ]
+        }
+    ]
+}

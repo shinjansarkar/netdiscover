@@ -1,0 +1,699 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+    .new-scan-layout {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .new-scan-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    }
+
+    .input-field {
+        width: 100%;
+        background-color: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        padding: 12px 16px;
+        color: var(--text-primary);
+        font-family: var(--font-body);
+        font-size: 14px;
+        outline: none;
+        transition: var(--transition-smooth);
+    }
+
+    .input-field:focus {
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .select-field {
+        width: 100%;
+        background-color: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        padding: 12px 16px;
+        color: var(--text-primary);
+        font-family: var(--font-body);
+        font-size: 14px;
+        outline: none;
+        transition: var(--transition-smooth);
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg fill='%239ca3af' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        font-size: 13px;
+        color: var(--text-secondary);
+        user-select: none;
+    }
+
+    .checkbox-container input {
+        display: none;
+    }
+
+    .checkmark {
+        width: 18px;
+        height: 18px;
+        background-color: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition-smooth);
+    }
+
+    .checkbox-container:hover .checkmark {
+        border-color: var(--accent-blue);
+    }
+
+    .checkbox-container input:checked + .checkmark {
+        background-color: var(--accent-blue);
+        border-color: var(--accent-blue);
+    }
+
+    .checkbox-container input:checked + .checkmark::after {
+        content: "\f00c";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        color: var(--text-primary);
+        font-size: 10px;
+    }
+
+    /* Port Range Buttons */
+    .port-selector-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+
+    .port-btn {
+        background-color: var(--bg-input);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        padding: 12px;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: var(--transition-smooth);
+        text-align: center;
+    }
+
+    .port-btn:hover {
+        border-color: var(--text-muted);
+        color: var(--text-primary);
+    }
+
+    .port-btn.active {
+        background-color: var(--accent-blue);
+        border-color: var(--accent-blue);
+        color: var(--text-primary);
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Thread Slider */
+    .slider-container {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .slider {
+        flex-grow: 1;
+        appearance: none;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--bg-deep);
+        outline: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        transition: var(--transition-smooth);
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+    }
+
+    .slider-val {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--accent-blue);
+        min-width: 32px;
+        text-align: right;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 32px;
+    }
+
+    .btn-submit {
+        flex-grow: 1;
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+        color: var(--text-primary);
+        font-family: var(--font-display);
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 16px;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        box-shadow: 0 4px 14px var(--accent-glow);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-submit:hover {
+        filter: brightness(1.1);
+        box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-reset {
+        background-color: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        padding: 16px 24px;
+        border-radius: var(--border-radius-sm);
+        cursor: pointer;
+        font-family: var(--font-display);
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        transition: var(--transition-smooth);
+    }
+
+    .btn-reset:hover {
+        background-color: var(--bg-input);
+        border-color: var(--text-muted);
+        color: var(--text-primary);
+    }
+
+    /* Live Progress Card */
+    .live-status-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: 24px;
+    }
+
+    .live-status-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+    }
+
+    .live-indicator.active {
+        color: var(--accent-emerald);
+    }
+
+    .live-indicator.active .status-dot {
+        background-color: var(--accent-emerald);
+        box-shadow: 0 0 8px var(--accent-emerald);
+        animation: pulse 1.5s infinite;
+    }
+
+    .progress-percent {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .progress-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 20px;
+        border-top: 1px solid var(--border-color);
+        padding-top: 16px;
+    }
+
+    .progress-stat-box {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .progress-stat-lbl {
+        font-size: 10px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .progress-stat-val {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    /* Console Logger */
+    .console-logger {
+        margin-top: 24px;
+        background-color: #08090c;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .console-header {
+        background-color: #10121a;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .console-title {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .console-dots {
+        display: flex;
+        gap: 6px;
+    }
+
+    .console-dot-btn {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #f43f5e;
+    }
+
+    .console-dot-btn:nth-child(2) { background-color: #eab308; }
+    .console-dot-btn:nth-child(3) { background-color: #22c55e; }
+
+    .console-body {
+        padding: 16px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        height: 250px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .log-line {
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    .log-line.info { color: #a3e635; }
+    .log-line.warning { color: #facc15; }
+    .log-line.error { color: #f87171; }
+    .log-line.debug { color: #60a5fa; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="new-scan-layout">
+    <!-- Left Card: Configurations -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 600;">
+                <i class="fa-solid fa-gears" style="color: var(--accent-blue); margin-right: 8px;"></i> Configuration
+            </h3>
+            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); text-transform: uppercase;">SCAN_ENGINE_V4.2</span>
+        </div>
+
+        <form id="scan-config-form" onsubmit="startScan(event)">
+            <!-- Subnet Target -->
+            <div class="form-group">
+                <label class="form-label" for="subnet">Subnet Range</label>
+                <input type="text" id="subnet" class="input-field" placeholder="192.168.1.0/24" value="192.168.1.0/24" required>
+            </div>
+
+            <!-- Scan Type -->
+            <div class="form-group">
+                <label class="form-label" for="scan-type">Scan Type</label>
+                <select id="scan-type" class="select-field">
+                    <option value="full">Full (Comprehensive)</option>
+                    <option value="quick">Quick Scan</option>
+                    <option value="discovery">Host Discovery Only</option>
+                </select>
+            </div>
+
+            <!-- Host Discovery Methods -->
+            <div class="form-group">
+                <label class="form-label">Host Discovery Methods</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="method-icmp" checked>
+                        <span class="checkmark"></span>
+                        ICMP Echo Request
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="method-arp" checked>
+                        <span class="checkmark"></span>
+                        ARP Broadcast
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="method-tcp">
+                        <span class="checkmark"></span>
+                        TCP SYN (Stealth)
+                    </label>
+                </div>
+            </div>
+
+            <!-- Port Range Selector -->
+            <div class="form-group">
+                <label class="form-label">Port Range</label>
+                <div class="port-selector-grid">
+                    <button type="button" class="port-btn" onclick="selectPortRange('common', this)">Common</button>
+                    <button type="button" class="port-btn active" onclick="selectPortRange('top100', this)">Top 100</button>
+                    <button type="button" class="port-btn" onclick="selectPortRange('top1000', this)">Top 1000</button>
+                    <button type="button" class="port-btn" onclick="selectPortRange('custom', this)">Custom</button>
+                </div>
+                <input type="text" id="custom-ports" class="input-field" placeholder="Example: 80,443,8000-8080" style="margin-top: 10px; display: none;">
+            </div>
+
+            <!-- Max Concurrent Threads Slider -->
+            <div class="form-group" style="margin-top: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label class="form-label" style="margin-bottom: 0;">Max Concurrent Threads</label>
+                    <span class="slider-val" id="threads-display">150</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="threads-slider" class="slider" min="10" max="300" value="150" oninput="updateThreadsVal(this.value)">
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit" id="btn-start">
+                    <i class="fa-solid fa-play"></i> Start Scan
+                </button>
+                <button type="button" class="btn-reset" onclick="resetForm()">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right Side: Live Status & Console Logger -->
+    <div>
+        <div class="live-status-card">
+            <div class="live-status-header">
+                <div class="live-indicator" id="live-indicator">
+                    <span class="status-dot" style="background-color: var(--text-muted);"></span>
+                    <span id="live-indicator-text">Inactive</span>
+                </div>
+                <div class="progress-percent" id="progress-percent">0%</div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="progress-bar-track" style="height: 10px;">
+                <div class="progress-bar-fill" id="progress-bar" style="width: 0%; height: 100%;"></div>
+            </div>
+
+            <div class="progress-stats-grid">
+                <div class="progress-stat-box">
+                    <span class="progress-stat-lbl">Scanning IP</span>
+                    <span class="progress-stat-val" id="stat-scanning-ip">0.0.0.0</span>
+                </div>
+                <div class="progress-stat-box">
+                    <span class="progress-stat-lbl">Target Port</span>
+                    <span class="progress-stat-val" id="stat-target-port">None</span>
+                </div>
+                <div class="progress-stat-box">
+                    <span class="progress-stat-lbl">Elapsed</span>
+                    <span class="progress-stat-val" id="stat-elapsed">00:00:00</span>
+                </div>
+                <div class="progress-stat-box">
+                    <span class="progress-stat-lbl">Remaining</span>
+                    <span class="progress-stat-val" id="stat-remaining">~ 00:00:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Console -->
+        <div class="console-logger">
+            <div class="console-header">
+                <span class="console-title"><i class="fa-solid fa-terminal" style="margin-right: 6px;"></i> Engine Log</span>
+                <div class="console-dots">
+                    <div class="console-dot-btn"></div>
+                    <div class="console-dot-btn"></div>
+                    <div class="console-dot-btn"></div>
+                </div>
+            </div>
+            <div class="console-body" id="console-body">
+                <div class="log-line">[SYSTEM] Initialization complete. Scan Engine Ready.</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedPortRangeType = 'top100';
+    let activeScanInterval = null;
+
+    function selectPortRange(rangeType, btnElement) {
+        selectedPortRangeType = rangeType;
+        
+        // Toggle active styling
+        const buttons = document.querySelectorAll('.port-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+
+        // Show/hide custom ports input
+        const customInput = document.getElementById('custom-ports');
+        if (rangeType === 'custom') {
+            customInput.style.display = 'block';
+            customInput.focus();
+        } else {
+            customInput.style.display = 'none';
+        }
+    }
+
+    function updateThreadsVal(val) {
+        document.getElementById('threads-display').textContent = val;
+    }
+
+    function resetForm() {
+        document.getElementById('subnet').value = '192.168.1.0/24';
+        document.getElementById('scan-type').value = 'full';
+        document.getElementById('method-icmp').checked = true;
+        document.getElementById('method-arp').checked = true;
+        document.getElementById('method-tcp').checked = false;
+        
+        const top100Btn = document.querySelector('.port-btn:nth-child(2)');
+        selectPortRange('top100', top100Btn);
+        
+        document.getElementById('threads-slider').value = 150;
+        updateThreadsVal(150);
+    }
+
+    function startScan(event) {
+        event.preventDefault();
+        
+        const subnet = document.getElementById('subnet').value;
+        const scanType = document.getElementById('scan-type').value;
+        
+        // Find checked methods
+        let discoveryMethod = 'ICMP';
+        const icmpChecked = document.getElementById('method-icmp').checked;
+        const arpChecked = document.getElementById('method-arp').checked;
+        
+        if (icmpChecked && arpChecked) {
+            discoveryMethod = 'BOTH';
+        } else if (arpChecked) {
+            discoveryMethod = 'ARP';
+        } else if (icmpChecked) {
+            discoveryMethod = 'ICMP';
+        }
+        
+        const threads = document.getElementById('threads-slider').value;
+        const customPorts = document.getElementById('custom-ports').value;
+
+        const requestData = {
+            subnet: subnet,
+            port_range: selectedPortRangeType,
+            custom_ports: customPorts,
+            discovery_method: discoveryMethod,
+            threads: threads
+        };
+
+        // Disable start button
+        const startBtn = document.getElementById('btn-start');
+        startBtn.disabled = true;
+        startBtn.style.opacity = '0.7';
+        startBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Initializing...';
+
+        // Add log line
+        addLogLine('INFO', 'ScanEngine', `Launching background subnet scanning for ${subnet}`);
+
+        // Post request
+        fetch('/api/scan/launch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const scanId = data.scan_id;
+                addLogLine('INFO', 'ScanEngine', `Scan registered. ID: ${scanId}`);
+                
+                // Activate indicator
+                const liveInd = document.getElementById('live-indicator');
+                liveInd.className = 'live-indicator active';
+                document.getElementById('live-indicator-text').textContent = 'Active';
+                document.querySelector('#live-indicator .status-dot').style.backgroundColor = 'var(--accent-emerald)';
+
+                // Start Polling Status
+                if (activeScanInterval) clearInterval(activeScanInterval);
+                activeScanInterval = setInterval(() => pollScanStatus(scanId), 1000);
+            } else {
+                addLogLine('ERROR', 'ScanEngine', `Error launching scan: ${data.message}`);
+                resetStartBtn();
+            }
+        })
+        .catch(err => {
+            addLogLine('ERROR', 'ScanEngine', `Network communication error: ${err}`);
+            resetStartBtn();
+        });
+    }
+
+    function resetStartBtn() {
+        const startBtn = document.getElementById('btn-start');
+        startBtn.disabled = false;
+        startBtn.style.opacity = '1';
+        startBtn.innerHTML = '<i class="fa-solid fa-play"></i> Start Scan';
+    }
+
+    function pollScanStatus(scanId) {
+        fetch(`/api/scan/status/${scanId}`)
+        .then(response => response.json())
+        .then(data => {
+            // Update UI elements
+            document.getElementById('progress-percent').textContent = `${data.progress}%`;
+            document.getElementById('progress-bar').style.width = `${data.progress}%`;
+            document.getElementById('stat-scanning-ip').textContent = data.current_ip;
+            document.getElementById('stat-target-port').textContent = data.target_port;
+            document.getElementById('stat-elapsed').textContent = data.elapsed;
+            document.getElementById('stat-remaining').textContent = data.remaining;
+
+            // Fetch latest engine logs dynamically
+            fetch(`/api/logs?limit=5`)
+            .then(r => r.json())
+            .then(logs => {
+                logs.reverse().forEach(log => {
+                    // Avoid duplicating logs if possible (simplistic display update)
+                    addLogLine(log.level, log.source, log.message, true);
+                });
+            });
+
+            if (data.status === 'COMPLETED' || data.status === 'FAILED') {
+                clearInterval(activeScanInterval);
+                resetStartBtn();
+                
+                // Deactivate indicator
+                const liveInd = document.getElementById('live-indicator');
+                liveInd.className = 'live-indicator';
+                document.getElementById('live-indicator-text').textContent = 'Finished';
+                document.querySelector('#live-indicator .status-dot').style.backgroundColor = 'var(--text-muted)';
+                
+                if (data.status === 'COMPLETED') {
+                    addLogLine('INFO', 'ScanEngine', `Scan execution completed! Redirecting to history...`);
+                    setTimeout(() => {
+                        window.location.href = `/scan_history_page?scan_id=${scanId}`;
+                    }, 2000);
+                } else {
+                    addLogLine('ERROR', 'ScanEngine', `Scan execution failed.`);
+                }
+            }
+        });
+    }
+
+    let existingLogs = new Set();
+    function addLogLine(level, source, message, checkDuplicate = false) {
+        const key = `${source}-${message}`;
+        if (checkDuplicate && existingLogs.has(key)) return;
+        
+        if (checkDuplicate) {
+            existingLogs.add(key);
+        }
+
+        const consoleBody = document.getElementById('console-body');
+        const line = document.createElement('div');
+        line.className = `log-line ${level.toLowerCase()}`;
+        line.textContent = `[${level}] ${message}`;
+        consoleBody.appendChild(line);
+        consoleBody.scrollTop = consoleBody.scrollHeight;
+    }
+</script>
+{% endblock %}

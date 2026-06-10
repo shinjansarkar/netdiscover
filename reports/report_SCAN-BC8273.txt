@@ -1,0 +1,14 @@
+================================================================================
+ NETDISCOVER SECURITY AUDIT REPORT - SCAN-BC8273
+ Generated: 2026-06-11 00:33:10
+================================================================================
+
+SCAN METADATA:
+  Target Subnet: 192.168.1.0/24
+  Scan Type:     BOTH Scan (top100)
+  Status:        COMPLETED
+  Duration:      2.27 seconds
+  Hosts Found:   0
+
+DISCOVERED HOSTS & SERVICES:
+--------------------------------------------------------------------------------

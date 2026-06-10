@@ -1,0 +1,26 @@
+================================================================================
+ NETDISCOVER SECURITY AUDIT REPORT - SCAN-F538CC
+ Generated: 2026-06-11 00:40:14
+================================================================================
+
+SCAN METADATA:
+  Target Subnet: 127.0.0.1/32
+  Scan Type:     ICMP Scan (top100)
+  Status:        COMPLETED
+  Duration:      4.03 seconds
+  Hosts Found:   1
+
+DISCOVERED HOSTS & SERVICES:
+--------------------------------------------------------------------------------
+Host: 127.0.0.1 (localhost)
+  Status:        ONLINE
+  MAC Address:   Unknown
+  Latency:       0.05ms
+  Likely OS:     Linux/Unix
+  Open Ports:
+    PORT      STATE    SERVICE      PRODUCT / VERSION / BANNER
+    ----      -----    -------      --------------------------
+    631       OPEN     Unknown      Unknown Unknown
+    5000      OPEN     Unknown      Unknown Unknown
+    5432      OPEN     PostgreSQL   Unknown Unknown
+--------------------------------------------------------------------------------

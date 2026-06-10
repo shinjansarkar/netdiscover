@@ -1,0 +1,59 @@
+================================================================================
+ NETDISCOVER SECURITY AUDIT REPORT - SCAN-8892-A
+ Generated: 2026-06-11 00:32:38
+================================================================================
+
+SCAN METADATA:
+  Target Subnet: 192.168.1.0/24
+  Scan Type:     ICMP + ARP (Full)
+  Status:        COMPLETED
+  Duration:      102.00 seconds
+  Hosts Found:   4
+
+DISCOVERED HOSTS & SERVICES:
+--------------------------------------------------------------------------------
+Host: 192.168.1.1 (Main-Gateway-ASA)
+  Status:        ONLINE
+  MAC Address:   00:50:56:C0:00:08
+  Latency:       0.42ms
+  Likely OS:     Cisco IOS-XE 17.3
+  Open Ports:
+    PORT      STATE    SERVICE      PRODUCT / VERSION / BANNER
+    ----      -----    -------      --------------------------
+    22        OPEN     SSH          OpenSSH 8.2p1 (Banner: SSH-2.0-OpenSSH_8.2p1)
+    80        OPEN     HTTP         Cisco-IOS 17.3 (Banner: HTTP/1.1 200 OK
+Server: Cisco-IOS)
+    443       OPEN     HTTPS        Cisco-IOS 17.3 (Banner: HTTP/1.1 200 OK
+Server: Cisco-IOS)
+--------------------------------------------------------------------------------
+Host: 192.168.1.105 (Dev-Worker-03)
+  Status:        ONLINE
+  MAC Address:   00:0C:29:4F:8D:1A
+  Latency:       1.15ms
+  Likely OS:     Ubuntu Linux (5.15)
+  Open Ports:
+    PORT      STATE    SERVICE      PRODUCT / VERSION / BANNER
+    ----      -----    -------      --------------------------
+    22        OPEN     SSH          OpenSSH 8.2p1 (Banner: SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.5)
+    443       OPEN     HTTPS        nginx 1.18.0 (Banner: HTTP/1.1 200 OK
+Server: nginx/1.18.0)
+    3306      OPEN     MySQL        MariaDB 8.0.21 (Banner: 8.0.21-MariaDB)
+--------------------------------------------------------------------------------
+Host: 192.168.1.108 (Legacy-NAS)
+  Status:        OFFLINE
+  MAC Address:   08:00:27:11:AB:65
+  Latency:       TIMEOUT
+  Likely OS:     Linux
+  Open Ports: None detected (or scanned)
+--------------------------------------------------------------------------------
+Host: 192.168.1.201 (Corporate-Laptop-K8S)
+  Status:        ONLINE
+  MAC Address:   BC:D1:D3:E5:88:F2
+  Latency:       4.82ms
+  Likely OS:     Windows 11
+  Open Ports:
+    PORT      STATE    SERVICE      PRODUCT / VERSION / BANNER
+    ----      -----    -------      --------------------------
+    135       OPEN     MSRPC        Microsoft Windows RPC
+    445       OPEN     SMB          Microsoft Windows SMB
+--------------------------------------------------------------------------------
