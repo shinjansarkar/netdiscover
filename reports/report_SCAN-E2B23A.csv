@@ -1,0 +1,2 @@
+ScanID,TargetSubnet,IPAddress,Hostname,HostStatus,MACAddress,ResponseTime,OSDetected,Port,Protocol,Service,PortState,Product,Version,Banner
+SCAN-E2B23A,192.168.29.0,192.168.29.0,Unknown,ONLINE,Unknown,0ms,Unknown,,,,,,,

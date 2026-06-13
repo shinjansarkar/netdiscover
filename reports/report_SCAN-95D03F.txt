@@ -1,20 +1,20 @@
 ================================================================================
- NETDISCOVER SECURITY AUDIT REPORT - SCAN-3F9F0A
- Generated: 2026-06-11 00:40:24
+ NETDISCOVER SECURITY AUDIT REPORT - SCAN-95D03F
+ Generated: 2026-06-12 20:32:30
 ================================================================================
 
 SCAN METADATA:
-  Target Subnet: 192.168.29.192/16
+  Target Subnet: 192.168.29.1/24
   Scan Type:     BOTH Scan (top100)
   Status:        COMPLETED
-  Duration:      458.45 seconds
-  Hosts Found:   6
+  Duration:      8.21 seconds
+  Hosts Found:   2
 
 DISCOVERED HOSTS & SERVICES:
 --------------------------------------------------------------------------------
 Host: 192.168.29.1 (reliance.reliance)
   Status:        ONLINE
-  MAC Address:   Unknown
+  MAC Address:   f0:ed:b8:87:ec:a0
   Latency:       0.57ms
   Likely OS:     Linux/Unix
   Open Ports:
@@ -32,38 +32,10 @@ Server: JCOW414/JUICEJFV-1.3.32
 Service Unavailable)
     8443      OPEN     HTTPS-Alt    Unknown Unknown
 --------------------------------------------------------------------------------
-Host: 192.168.29.121 (Unknown)
-  Status:        ONLINE
-  MAC Address:   Unknown
-  Latency:       2.2ms
-  Likely OS:     Linux/Unix
-  Open Ports: None detected (or scanned)
---------------------------------------------------------------------------------
-Host: 192.168.29.187 (Unknown)
-  Status:        ONLINE
-  MAC Address:   Unknown
-  Latency:       2.41ms
-  Likely OS:     Linux/Unix
-  Open Ports: None detected (or scanned)
---------------------------------------------------------------------------------
-Host: 192.168.29.192 (Unknown)
-  Status:        ONLINE
-  MAC Address:   Unknown
-  Latency:       8.44ms
-  Likely OS:     Linux/Unix
-  Open Ports: None detected (or scanned)
---------------------------------------------------------------------------------
-Host: 192.168.29.96 (Unknown)
-  Status:        ONLINE
-  MAC Address:   Unknown
-  Latency:       30.2ms
-  Likely OS:     Linux/Unix
-  Open Ports: None detected (or scanned)
---------------------------------------------------------------------------------
 Host: 192.168.29.97 (shinjan)
   Status:        ONLINE
   MAC Address:   Unknown
-  Latency:       0.04ms
+  Latency:       0.02ms
   Likely OS:     Linux/Unix
   Open Ports:
     PORT      STATE    SERVICE      PRODUCT / VERSION / BANNER

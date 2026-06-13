@@ -1,0 +1,30 @@
+{
+    "report_id": "SCAN-BD2B03",
+    "timestamp": "2026-06-12T20:10:56.942667",
+    "metadata": {
+        "target": "192.168.29.97/29",
+        "scan_type": "BOTH Scan (top100)",
+        "status": "COMPLETED",
+        "duration_seconds": 3.0351407527923584,
+        "hosts_found": 1
+    },
+    "hosts": [
+        {
+            "ip": "192.168.29.97",
+            "hostname": "shinjan",
+            "status": "ONLINE",
+            "mac": "Unknown",
+            "response_time": "0.03ms",
+            "os": "Linux/Unix",
+            "open_ports": [
+                {
+                    "port": 5000,
+                    "service": "Unknown",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                }
+            ]
+        }
+    ]
+}

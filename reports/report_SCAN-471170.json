@@ -1,0 +1,116 @@
+{
+    "report_id": "SCAN-471170",
+    "timestamp": "2026-06-12T21:25:58.305307",
+    "metadata": {
+        "target": "192.168.29.1/24",
+        "scan_type": "BOTH Scan (top1000)",
+        "status": "COMPLETED",
+        "duration_seconds": 12.32025933265686,
+        "hosts_found": 5
+    },
+    "hosts": [
+        {
+            "ip": "192.168.29.1",
+            "hostname": "reliance.reliance",
+            "status": "ONLINE",
+            "mac": "f0:ed:b8:87:ec:a0",
+            "response_time": "0.58ms",
+            "os": "Linux/Unix",
+            "open_ports": [
+                {
+                    "port": 53,
+                    "service": "DNS",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                },
+                {
+                    "port": 80,
+                    "service": "HTTP",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                },
+                {
+                    "port": 443,
+                    "service": "HTTPS",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                },
+                {
+                    "port": 1900,
+                    "service": "Unknown",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                },
+                {
+                    "port": 7443,
+                    "service": "Unknown",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                },
+                {
+                    "port": 8080,
+                    "service": "HTTP-Proxy",
+                    "product": "JCOW414",
+                    "version": "JUICEJFV-1.3.32",
+                    "banner": "HTTP/1.1 503 Service Unavailable\r\nContent-Length: 19\r\nContent-Type: text/html\r\nConnection: close\r\nServer: JCOW414/JUICEJFV-1.3.32\r\n\r\nService Unavailable"
+                },
+                {
+                    "port": 8443,
+                    "service": "HTTPS-Alt",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                }
+            ]
+        },
+        {
+            "ip": "192.168.29.121",
+            "hostname": "Unknown",
+            "status": "ONLINE",
+            "mac": "9a:1b:8c:0b:d0:35",
+            "response_time": "158.0ms",
+            "os": "Linux/Unix",
+            "open_ports": []
+        },
+        {
+            "ip": "192.168.29.187",
+            "hostname": "Unknown",
+            "status": "ONLINE",
+            "mac": "b2:10:85:c1:60:15",
+            "response_time": "388.0ms",
+            "os": "Linux/Unix",
+            "open_ports": []
+        },
+        {
+            "ip": "192.168.29.192",
+            "hostname": "Unknown",
+            "status": "ONLINE",
+            "mac": "96:9e:84:9d:bb:30",
+            "response_time": "0ms",
+            "os": "Unknown",
+            "open_ports": []
+        },
+        {
+            "ip": "192.168.29.97",
+            "hostname": "shinjan",
+            "status": "ONLINE",
+            "mac": "Unknown",
+            "response_time": "0.02ms",
+            "os": "Linux/Unix",
+            "open_ports": [
+                {
+                    "port": 5000,
+                    "service": "Unknown",
+                    "product": "Unknown",
+                    "version": "Unknown",
+                    "banner": null
+                }
+            ]
+        }
+    ]
+}

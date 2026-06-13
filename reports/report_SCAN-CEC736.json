@@ -1,20 +1,20 @@
 {
-    "report_id": "SCAN-3F9F0A",
-    "timestamp": "2026-06-11T00:40:24.107624",
+    "report_id": "SCAN-CEC736",
+    "timestamp": "2026-06-13T21:55:51.476101",
     "metadata": {
-        "target": "192.168.29.192/16",
+        "target": "192.168.29.1/24",
         "scan_type": "BOTH Scan (top100)",
         "status": "COMPLETED",
-        "duration_seconds": 458.4476547241211,
-        "hosts_found": 6
+        "duration_seconds": 8.27163314819336,
+        "hosts_found": 4
     },
     "hosts": [
         {
             "ip": "192.168.29.1",
             "hostname": "reliance.reliance",
             "status": "ONLINE",
-            "mac": "Unknown",
-            "response_time": "0.57ms",
+            "mac": "f0:ed:b8:87:ec:a0",
+            "response_time": "0.5ms",
             "os": "Linux/Unix",
             "open_ports": [
                 {
@@ -58,17 +58,8 @@
             "ip": "192.168.29.121",
             "hostname": "Unknown",
             "status": "ONLINE",
-            "mac": "Unknown",
-            "response_time": "2.2ms",
-            "os": "Linux/Unix",
-            "open_ports": []
-        },
-        {
-            "ip": "192.168.29.187",
-            "hostname": "Unknown",
-            "status": "ONLINE",
-            "mac": "Unknown",
-            "response_time": "2.41ms",
+            "mac": "9a:1b:8c:0b:d0:35",
+            "response_time": "58.2ms",
             "os": "Linux/Unix",
             "open_ports": []
         },
@@ -76,17 +67,8 @@
             "ip": "192.168.29.192",
             "hostname": "Unknown",
             "status": "ONLINE",
-            "mac": "Unknown",
-            "response_time": "8.44ms",
-            "os": "Linux/Unix",
-            "open_ports": []
-        },
-        {
-            "ip": "192.168.29.96",
-            "hostname": "Unknown",
-            "status": "ONLINE",
-            "mac": "Unknown",
-            "response_time": "30.2ms",
+            "mac": "96:9e:84:9d:bb:30",
+            "response_time": "8.09ms",
             "os": "Linux/Unix",
             "open_ports": []
         },
@@ -95,7 +77,7 @@
             "hostname": "shinjan",
             "status": "ONLINE",
             "mac": "Unknown",
-            "response_time": "0.04ms",
+            "response_time": "0.02ms",
             "os": "Linux/Unix",
             "open_ports": [
                 {

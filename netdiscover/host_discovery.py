@@ -72,11 +72,14 @@ class HostDiscovery:
                     if match:
                         latency = round(float(match.group(1)), 2)
 
+                # Try to resolve MAC from system neighbor/ARP table
+                mac_addr = self.get_mac_from_system(ip_str)
+
                 return {
                     "ip": ip_str,
                     "hostname": hostname,
                     "status": "ONLINE",
-                    "mac": "Unknown",
+                    "mac": mac_addr or "Unknown",
                     "response_time": f"{latency}ms",
                     "os": "Linux/Unix" if "ttl=" in result.stdout.lower() and "ttl=64" in result.stdout.lower() else ("Windows" if "ttl=128" in result.stdout.lower() else "Unknown")
                 }
@@ -183,6 +186,106 @@ class HostDiscovery:
 
         # Convert to list and sort by IP address
         results = list(discovered_hosts.values())
+        # Merge entries from system ARP/neighbour table to catch hosts that may block ICMP
+        try:
+            arp_entries = self._get_arp_table_for_subnet(subnet_cidr)
+            for ip, mac in arp_entries.items():
+                if ip not in {r['ip'] for r in results}:
+                    hostname = self.get_hostname(ip)
+                    results.append({
+                        "ip": ip,
+                        "hostname": hostname if hostname else "Unknown",
+                        "status": "ONLINE",
+                        "mac": mac or "Unknown",
+                        "response_time": "0ms",
+                        "os": "Unknown"
+                    })
+        except Exception:
+            # Non-fatal: if arp table parsing fails, continue with discovered results
+            logger.debug("ARP table merge skipped or failed.")
+
         results.sort(key=lambda x: ipaddress.ip_address(x["ip"]))
         logger.info(f"Host discovery complete. Found {len(results)} active hosts.")
         return results
+
+    def _get_arp_table_for_subnet(self, subnet_cidr: str) -> Dict[str, str]:
+        """
+        Reads the system ARP/neighbor table and returns a mapping of IP->MAC
+        for entries that belong to the provided subnet. This helps identify
+        hosts that may not respond to ICMP but are visible in the ARP cache.
+        """
+        entries = {}
+        try:
+            network = ipaddress.ip_network(subnet_cidr, strict=False)
+        except Exception:
+            return entries
+
+        # Prefer `ip neigh` on Linux for richer output
+        try:
+            if platform.system().lower() == 'linux':
+                cmd = ['ip', 'neigh']
+                p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=2.0)
+                out = p.stdout.strip().splitlines()
+                for line in out:
+                    # Example: '192.168.29.121 dev eth0 lladdr 9a:1b:8c:0b:d0:35 REACHABLE'
+                    parts = line.split()
+                    if len(parts) >= 5 and 'lladdr' in parts:
+                        try:
+                            ip = parts[0]
+                            mac_idx = parts.index('lladdr') + 1
+                            mac = parts[mac_idx]
+                            if ipaddress.ip_address(ip) in network:
+                                entries[ip] = mac.lower()
+                        except Exception:
+                            continue
+                return entries
+
+            # Fallback to `arp -n` on other Unix-like systems
+            cmd = ['arp', '-n']
+            p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=2.0)
+            out = p.stdout.strip().splitlines()
+            for line in out:
+                m = re.search(r'([0-9]{1,3}(?:\.[0-9]{1,3}){3}).*?([0-9a-fA-F:]{17})', line)
+                if m:
+                    ip = m.group(1)
+                    mac = m.group(2).lower()
+                    try:
+                        if ipaddress.ip_address(ip) in network:
+                            entries[ip] = mac
+                    except Exception:
+                        continue
+        except Exception:
+            logger.debug('Unable to read system ARP/neighbor table for subnet merge')
+
+        return entries
+
+    @staticmethod
+    def get_mac_from_system(ip: str) -> Optional[str]:
+        """
+        Attempts to read the system neighbour/ARP table to get the MAC for an IP.
+        Works cross-platform where `ip neigh` or `arp -n` exist.
+        """
+        try:
+            # Prefer `ip neigh show <ip>` on Linux
+            if platform.system().lower() == 'linux':
+                cmd = ['ip', 'neigh', 'show', ip]
+                p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=2.0)
+                out = p.stdout.strip()
+                # Typical output: "192.168.1.10 dev eth0 lladdr aa:bb:cc:dd:ee:ff REACHABLE"
+                m = re.search(r'lladdr\s+([0-9a-fA-F:]{17})', out)
+                if m:
+                    return m.group(1).lower()
+
+            # Fallback to arp -n (Unix/mac)
+            cmd = ['arp', '-n', ip]
+            p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=2.0)
+            out = p.stdout.strip()
+            # grep MAC like aa:bb:cc:dd:ee:ff or on Mac: ? (192.168.1.10) at aa:bb:cc:dd:ee:ff on en0
+            m = re.search(r'([0-9a-fA-F:]{17})', out)
+            if m:
+                return m.group(1).lower()
+
+        except Exception:
+            logger.debug(f"Unable to obtain MAC from system table for {ip}")
+
+        return None

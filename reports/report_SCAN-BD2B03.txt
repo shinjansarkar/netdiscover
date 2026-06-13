@@ -1,26 +1,24 @@
 ================================================================================
- NETDISCOVER SECURITY AUDIT REPORT - SCAN-F538CC
- Generated: 2026-06-11 00:40:14
+ NETDISCOVER SECURITY AUDIT REPORT - SCAN-BD2B03
+ Generated: 2026-06-12 20:10:56
 ================================================================================
 
 SCAN METADATA:
-  Target Subnet: 127.0.0.1/32
-  Scan Type:     ICMP Scan (top100)
+  Target Subnet: 192.168.29.97/29
+  Scan Type:     BOTH Scan (top100)
   Status:        COMPLETED
-  Duration:      4.03 seconds
+  Duration:      3.04 seconds
   Hosts Found:   1
 
 DISCOVERED HOSTS & SERVICES:
 --------------------------------------------------------------------------------
-Host: 127.0.0.1 (localhost)
+Host: 192.168.29.97 (shinjan)
   Status:        ONLINE
   MAC Address:   Unknown
-  Latency:       0.05ms
+  Latency:       0.03ms
   Likely OS:     Linux/Unix
   Open Ports:
     PORT      STATE    SERVICE      PRODUCT / VERSION / BANNER
     ----      -----    -------      --------------------------
-    631       OPEN     Unknown      Unknown Unknown
     5000      OPEN     Unknown      Unknown Unknown
-    5432      OPEN     PostgreSQL   Unknown Unknown
 --------------------------------------------------------------------------------

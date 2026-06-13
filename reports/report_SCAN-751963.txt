@@ -1,13 +1,13 @@
 ================================================================================
- NETDISCOVER SECURITY AUDIT REPORT - SCAN-6D4D26
- Generated: 2026-06-11 00:40:26
+ NETDISCOVER SECURITY AUDIT REPORT - SCAN-751963
+ Generated: 2026-06-12 21:20:18
 ================================================================================
 
 SCAN METADATA:
   Target Subnet: 127.0.0.1
   Scan Type:     BOTH Scan (top100)
   Status:        COMPLETED
-  Duration:      4.03 seconds
+  Duration:      4.04 seconds
   Hosts Found:   1
 
 DISCOVERED HOSTS & SERVICES:

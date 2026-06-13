@@ -2,6 +2,8 @@ import uuid
 import time
 import logging
 import threading
+import ipaddress
+import socket
 from typing import List, Dict, Any, Optional
 from netdiscover.db import Database
 from netdiscover.host_discovery import HostDiscovery
@@ -56,12 +58,14 @@ class ScannerEngine:
         # Fallback to Top 100
         return TOP_100_PORTS
 
-    def execute_scan(self, scan_id: str, subnet: str, port_range_type: str, custom_ports: str = None, discovery_method: str = "ICMP", threads: int = 100):
+    def execute_scan(self, scan_id: str, subnet: str, port_range_type: str, custom_ports: str = None, discovery_method: str = "ICMP", threads: int = 100, record_results: bool = True, router_info: Optional[dict] = None, exclude_list: Optional[list] = None):
         """
         Synchronously executes the scanning process.
         """
         start_time = time.time()
-        self.db.create_scan(scan_id, target=subnet, scan_type=f"{discovery_method} Scan ({port_range_type})", status="RUNNING")
+        # If recording is enabled, create a DB record; otherwise operate ephemeral
+        if record_results:
+            self.db.create_scan(scan_id, target=subnet, scan_type=f"{discovery_method} Scan ({port_range_type})", status="RUNNING")
         
         ACTIVE_SCANS[scan_id] = {
             "status": "RUNNING",
@@ -79,6 +83,26 @@ class ScannerEngine:
             # 1. Host Discovery Phase
             discoverer = HostDiscovery(max_threads=threads)
             hosts = discoverer.discover(subnet, method=discovery_method)
+
+            # Fallback for single-IP targets: if discovery found nothing, still scan the target IP
+            # so "Open Ports on Node" can render for directly searched hosts.
+            if not hosts:
+                try:
+                    ip_obj = ipaddress.ip_interface(subnet).ip if '/' in subnet else ipaddress.ip_address(subnet)
+                    target_ip = str(ip_obj)
+                    hostname = discoverer.get_hostname(target_ip)
+                    mac = discoverer.get_mac_from_system(target_ip) if hasattr(discoverer, 'get_mac_from_system') else "Unknown"
+                    hosts = [{
+                        "ip": target_ip,
+                        "hostname": hostname if hostname else "Unknown",
+                        "status": "ONLINE",
+                        "mac": mac or "Unknown",
+                        "response_time": "0ms",
+                        "os": "Unknown"
+                    }]
+                    self.db.insert_log("INFO", "ScanEngine", f"Discovery fallback activated for single target {target_ip}")
+                except Exception:
+                    pass
             
             self.db.insert_log("INFO", "ScanEngine", f"Host discovery completed. Found {len(hosts)} active hosts.")
             
@@ -132,19 +156,63 @@ class ScannerEngine:
             ACTIVE_SCANS[scan_id]["current_ip"] = "Finished"
             ACTIVE_SCANS[scan_id]["target_port"] = "None"
 
-            # 3. Store Results in Database
-            self.db.save_scan_results(scan_id, results, duration)
-            
-            # 4. Generate Reports
-            # Fetch scan metadata and hosts from DB to guarantee schema parity
-            scan_metadata = self.db.get_scan(scan_id)
-            saved_hosts = self.db.get_scan_hosts(scan_id)
-            
-            ReportGenerator.generate_json(scan_id, scan_metadata, saved_hosts)
-            ReportGenerator.generate_txt(scan_id, scan_metadata, saved_hosts)
-            ReportGenerator.generate_csv(scan_id, scan_metadata, saved_hosts)
-            
-            self.db.insert_log("INFO", "ScanEngine", f"Scan {scan_id} reports generated successfully.")
+            # 3. Apply exclusion filter (IP or CIDR strings in exclude_list)
+            if exclude_list:
+                try:
+                    # Build list of ip_network objects for CIDR and ip_address for single IPs
+                    exclude_nets = []
+                    for e in exclude_list:
+                        e = str(e).strip()
+                        try:
+                            if '/' in e:
+                                exclude_nets.append(ipaddress.ip_network(e, strict=False))
+                            else:
+                                exclude_nets.append(ipaddress.ip_network(e + '/32'))
+                        except Exception:
+                            # ignore malformed entries
+                            continue
+
+                    def is_excluded(ipstr: str) -> bool:
+                        try:
+                            ipobj = ipaddress.ip_address(ipstr)
+                            for net in exclude_nets:
+                                if ipobj in net:
+                                    return True
+                        except Exception:
+                            return False
+                        return False
+
+                    pre_count = len(results)
+                    results = [r for r in results if not is_excluded(r.get('ip') or r.get('ip_address') or '')]
+                    excluded_count = pre_count - len(results)
+                    logger.info(f"Excluded {excluded_count} hosts from results based on exclude_list.")
+                except Exception as e:
+                    logger.error(f"Error applying exclude_list filter: {str(e)}")
+
+            # 4. Store Results in Database and generate reports if recording was requested
+            if record_results:
+                self.db.save_scan_results(scan_id, results, duration)
+
+                # 4. Generate Reports
+                scan_metadata = self.db.get_scan(scan_id)
+                saved_hosts = self.db.get_scan_hosts(scan_id)
+
+                ReportGenerator.generate_json(scan_id, scan_metadata, saved_hosts)
+                ReportGenerator.generate_txt(scan_id, scan_metadata, saved_hosts)
+                ReportGenerator.generate_csv(scan_id, scan_metadata, saved_hosts)
+
+                self.db.insert_log("INFO", "ScanEngine", f"Scan {scan_id} reports generated successfully.")
+            else:
+                # Ephemeral scan: optionally attach router_info to results for immediate UI display
+                if router_info:
+                    # annotate results with router metadata so UI can build topology
+                    results.insert(0, {
+                        "ip": router_info.get("ip", "router"),
+                        "hostname": router_info.get("hostname", "router"),
+                        "status": "ROUTER",
+                        "mac": router_info.get("mac", "Unknown"),
+                        "ports": [{"port": router_info.get("port", None)}] if router_info.get("port") else [],
+                    })
 
         except Exception as e:
             logger.error(f"Error executing scan {scan_id}: {str(e)}")
@@ -154,7 +222,7 @@ class ScannerEngine:
             ACTIVE_SCANS[scan_id]["current_ip"] = "Error"
             ACTIVE_SCANS[scan_id]["target_port"] = "Error"
 
-    def launch_scan_async(self, subnet: str, port_range_type: str, custom_ports: str = None, discovery_method: str = "ICMP", threads: int = 100) -> str:
+    def launch_scan_async(self, subnet: str, port_range_type: str, custom_ports: str = None, discovery_method: str = "ICMP", threads: int = 100, record_results: bool = True, router_info: Optional[dict] = None, exclude_list: Optional[list] = None) -> str:
         """
         Launches a scan in a separate background thread.
         Returns the scan ID.
@@ -163,7 +231,7 @@ class ScannerEngine:
         
         t = threading.Thread(
             target=self.execute_scan,
-            args=(scan_id, subnet, port_range_type, custom_ports, discovery_method, threads),
+            args=(scan_id, subnet, port_range_type, custom_ports, discovery_method, threads, record_results, router_info, exclude_list),
             daemon=True
         )
         t.start()

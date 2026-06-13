@@ -1,0 +1,24 @@
+================================================================================
+ NETDISCOVER SECURITY AUDIT REPORT - SCAN-BA1B37
+ Generated: 2026-06-12 20:10:30
+================================================================================
+
+SCAN METADATA:
+  Target Subnet: 192.168.29.97
+  Scan Type:     BOTH Scan (top100)
+  Status:        COMPLETED
+  Duration:      2.04 seconds
+  Hosts Found:   1
+
+DISCOVERED HOSTS & SERVICES:
+--------------------------------------------------------------------------------
+Host: 192.168.29.97 (shinjan)
+  Status:        ONLINE
+  MAC Address:   Unknown
+  Latency:       0.03ms
+  Likely OS:     Linux/Unix
+  Open Ports:
+    PORT      STATE    SERVICE      PRODUCT / VERSION / BANNER
+    ----      -----    -------      --------------------------
+    5000      OPEN     Unknown      Unknown Unknown
+--------------------------------------------------------------------------------

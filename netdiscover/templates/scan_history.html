@@ -39,14 +39,55 @@
 
     .history-layout {
         display: grid;
-        grid-template-columns: 1.3fr 0.7fr;
+        grid-template-columns: 1.1fr 0.9fr;
         gap: 24px;
+        align-items: start;
     }
+
+    /* Inventory should expand to show most rows without internal scrolling */
+    .inventory-card {
+        padding: 24px;
+        max-height: none;
+        overflow: visible;
+    }
+
+    /* Make insight compact */
+    .insight-card {
+        min-height: 160px;
+        padding: 18px;
+    }
+
+    /* Topology placed under insight and slightly smaller */
+    .card.topology-card {
+        padding: 12px 16px;
+    }
+
+    /* Make service cards smaller and denser */
+    .top-services-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .service-card {
+        padding: 12px;
+        font-size: 12px;
+    }
+
+    .service-product { font-size: 13px; }
+    .service-desc { font-size: 11px; }
 
     @media (max-width: 1200px) {
         .history-layout {
             grid-template-columns: 1fr;
+            grid-auto-rows: auto;
         }
+        .top-services-grid {
+            grid-template-columns: 1fr;
+        }
+        .inventory-card { padding: 18px; }
+        .insight-card { min-height: auto; }
     }
 
     /* Inventory Table */
@@ -298,6 +339,52 @@
         color: var(--text-secondary);
         line-height: 1.4;
     }
+    /* Topology controls and modal */
+    .topology-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        float: right;
+    }
+
+    .btn-icon {
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.04);
+        color: var(--text-secondary);
+        padding: 6px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .topology-card.expanded {
+        grid-column: 1 / -1;
+        height: 560px;
+    }
+
+    /* Fullscreen modal for topology */
+    .topo-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.6);
+        z-index: 1200;
+    }
+    .topo-modal.open { display: flex; }
+    .topo-modal-content {
+        width: 92%;
+        height: 88%;
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+        display: flex;
+        flex-direction: column;
+    }
+    .topo-modal-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; }
+    .topo-modal-body { flex:1; overflow:hidden; }
 </style>
 {% endblock %}
 
@@ -321,11 +408,6 @@
         </div>
 
         <div style="display: flex; gap: 12px; align-items: center;">
-            <select class="select-field" style="padding: 8px 32px 8px 16px; font-size: 12px;" onchange="window.location.href='/scan_history_page?scan_id=' + this.value">
-                {% for s in scans %}
-                    <option value="{{ s.id }}" {% if s.id == selected_scan.id %}selected{% endif %}>{{ s.target }} ({{ s.id }})</option>
-                {% endfor %}
-            </select>
             <a href="{{ url_for('reports_page', scan_id=selected_scan.id) }}" class="btn-secondary" style="padding: 8px 16px; font-size: 12px;">
                 <i class="fa-solid fa-download"></i> Reports
             </a>
@@ -423,50 +505,68 @@
             </div>
         </div>
 
-        <!-- Right Column: Host Insight Panel & Mini Topology Map -->
-        <div style="display: flex; flex-direction: column; gap: 24px;">
-            <!-- Node Insight Panel -->
-            <div class="insight-card" id="insight-panel">
-                <div class="insight-header">
-                    <i class="fa-solid fa-circle-info insight-icon"></i>
-                    <div>
-                        <div class="insight-title" id="insight-node-ip">Select a Host</div>
-                        <div style="font-size: 11px; color: var(--text-muted);" id="insight-node-hostname">Click a row to inspect</div>
-                    </div>
-                </div>
-
-                <div class="os-info-block">
-                    <i class="fa-solid fa-laptop-code os-icon"></i>
-                    <div class="os-details">
-                        <span class="os-name" id="insight-node-os">OS Not Selected</span>
-                        <span class="os-confidence" id="insight-node-confidence">Confidence: --</span>
-                    </div>
-                </div>
-
-                <div class="node-meta-grid">
-                    <div class="node-meta-box">
-                        <span class="node-meta-lbl">Discovery</span>
-                        <span class="node-meta-val" id="insight-node-discovery">SNMP + ICMP</span>
-                    </div>
-                    <div class="node-meta-box">
-                        <span class="node-meta-lbl">Uptime</span>
-                        <span class="node-meta-val">14d 05h 12m</span>
-                    </div>
-                </div>
-
+        <!-- Right Column: Host Insight Panel -->
+        <div class="insight-card" id="insight-panel">
+            <div class="insight-header">
+                <i class="fa-solid fa-circle-info insight-icon"></i>
                 <div>
-                    <div class="ports-list-header">Open Ports on Node</div>
-                    <div id="insight-ports-list">
-                        <div style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 16px 0;">No ports info</div>
-                    </div>
+                    <div class="insight-title" id="insight-node-ip">Select a Host</div>
+                    <div style="font-size: 11px; color: var(--text-muted);" id="insight-node-hostname">Click a row to inspect</div>
                 </div>
             </div>
 
-            <!-- Mini Topology Visualisation -->
-            <div class="card" style="padding: 20px;">
-                <h3 style="font-family: var(--font-display); font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 16px;">Topology Visualization</h3>
-                <div style="height: 180px; width: 100%; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); overflow: hidden; background-color: var(--bg-deep); display: flex; align-items: center; justify-content: center;">
-                    <svg id="mini-topology-svg" style="width: 100%; height: 100%;"></svg>
+            <div class="os-info-block">
+                <i class="fa-solid fa-laptop-code os-icon"></i>
+                <div class="os-details">
+                    <span class="os-name" id="insight-node-os">OS Not Selected</span>
+                    <span class="os-confidence" id="insight-node-confidence">Confidence: --</span>
+                </div>
+            </div>
+
+            <div class="node-meta-grid">
+                <div class="node-meta-box">
+                    <span class="node-meta-lbl">Discovery</span>
+                    <span class="node-meta-val" id="insight-node-discovery">SNMP + ICMP</span>
+                </div>
+                <div class="node-meta-box">
+                    <span class="node-meta-lbl">Uptime</span>
+                    <span class="node-meta-val">14d 05h 12m</span>
+                </div>
+            </div>
+
+            <div>
+                <div class="ports-list-header">Open Ports on Node</div>
+                <div id="insight-ports-list">
+                    <div style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 16px 0;">No ports info</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full-width Bottom: Topology Map -->
+        <div class="card topology-card" style="grid-column: 1 / -1; padding: 20px; position: relative;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                <h3 style="font-family: var(--font-display); font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px;">Topology Visualization</h3>
+                <div class="topology-controls">
+                    <button class="btn-icon" id="topo-expand-btn" title="Expand topology" onclick="toggleTopologyExpand()"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                    <button class="btn-icon" id="topo-full-btn" title="Fullscreen topology" onclick="openTopologyModal()"><i class="fa-solid fa-arrows-up-down-left-right"></i></button>
+                </div>
+            </div>
+            <div id="topology-container" style="height: 420px; min-height: 320px; width: 100%; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; background-color: var(--bg-deep); display: block; padding: 12px; transition: var(--transition-smooth);">
+                <svg id="mini-topology-svg" style="width: 100%; height: 100%; display: block;"></svg>
+            </div>
+        </div>
+
+        <!-- Topology Fullscreen Modal -->
+        <div id="topo-modal" class="topo-modal" aria-hidden="true">
+            <div class="topo-modal-content">
+                <div class="topo-modal-header">
+                    <div style="font-weight:700; color:var(--text-primary);">Topology - Fullscreen</div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button class="btn-icon" onclick="closeTopologyModal()">Close</button>
+                    </div>
+                </div>
+                <div class="topo-modal-body" id="topo-modal-body">
+                    <!-- SVG will be moved here when modal opens -->
                 </div>
             </div>
         </div>
@@ -476,32 +576,44 @@
     <div style="margin-top: 32px;">
         <h3 style="font-family: var(--font-display); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); margin-bottom: 16px;">Top Active Services</h3>
         <div class="top-services-grid">
-            <div class="service-card">
-                <div class="service-card-header">
-                    <i class="fa-solid fa-terminal service-card-icon"></i>
-                    <span class="service-port-badge">Port 22</span>
-                </div>
-                <div class="service-product">OpenSSH 8.2p1</div>
-                <p class="service-desc">Active on active hosts. Secure shell access with RSA/Ed25519 authentication.</p>
-            </div>
+            {% set service_rows = [] %}
+            {% for host in hosts %}
+                {% for port in host.ports %}
+                    {% if port.state == 'OPEN' %}
+                        {% set _ = service_rows.append({
+                            'host_ip': host.ip_address,
+                            'host_name': host.hostname,
+                            'port': port.port,
+                            'service': port.service,
+                            'product': port.product,
+                            'version': port.version,
+                            'banner': port.banner
+                        }) %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
 
-            <div class="service-card">
-                <div class="service-card-header">
-                    <i class="fa-solid fa-globe service-card-icon"></i>
-                    <span class="service-port-badge">Port 443</span>
+            {% if service_rows %}
+                {% for svc in service_rows %}
+                    <div class="service-card">
+                        <div class="service-card-header">
+                            <i class="fa-solid fa-network-wired service-card-icon"></i>
+                            <span class="service-port-badge">Port {{ svc.port }}</span>
+                        </div>
+                        <div class="service-product">{{ svc.service }}{% if svc.product and svc.product != 'Unknown' %} / {{ svc.product }}{% endif %}</div>
+                        <p class="service-desc">
+                            {{ svc.host_ip }}{% if svc.host_name and svc.host_name != 'Unknown' %} ({{ svc.host_name }}){% endif %}
+                            {% if svc.version and svc.version != 'Unknown' %} - v{{ svc.version }}{% endif %}
+                            {% if svc.banner %} - {{ svc.banner }}{% endif %}
+                        </p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="service-card" style="grid-column: 1 / -1;">
+                    <div class="service-product">No active services detected</div>
+                    <p class="service-desc">Run a scan that finds open ports to populate this section.</p>
                 </div>
-                <div class="service-product">NGINX / TLS 1.3</div>
-                <p class="service-desc">Web services detected with valid Let's Encrypt certificates.</p>
-            </div>
-
-            <div class="service-card">
-                <div class="service-card-header">
-                    <i class="fa-solid fa-database service-card-icon"></i>
-                    <span class="service-port-badge">Port 3306</span>
-                </div>
-                <div class="service-product">MariaDB / MySQL</div>
-                <p class="service-desc">Database backend discovery. Access restricted to internal subnet segment.</p>
-            </div>
+            {% endif %}
         </div>
     </div>
 {% endif %}
@@ -534,9 +646,68 @@
         {% endfor %}
     };
 
+    let currentSelectedHost = null;
+    let isTopologyExpanded = false;
+
+    function toggleTopologyExpand() {
+        const container = document.getElementById('topology-container');
+        const btn = document.getElementById('topo-expand-btn');
+        isTopologyExpanded = !isTopologyExpanded;
+        
+        if (isTopologyExpanded) {
+            container.style.height = '650px';
+            btn.innerHTML = '<i class="fa-solid fa-compress"></i>';
+            btn.title = "Collapse topology";
+        } else {
+            container.style.height = '420px';
+            btn.innerHTML = '<i class="fa-solid fa-up-right-and-down-left-from-center"></i>';
+            btn.title = "Expand topology";
+        }
+        
+        if (currentSelectedHost) {
+            drawMiniTopology(currentSelectedHost);
+        }
+    }
+
+    function openTopologyModal() {
+        const modal = document.getElementById('topo-modal');
+        const modalBody = document.getElementById('topo-modal-body');
+        const svg = document.getElementById('mini-topology-svg');
+        
+        modalBody.appendChild(svg);
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        
+        if (currentSelectedHost) {
+            drawMiniTopology(currentSelectedHost);
+        }
+    }
+
+    function closeTopologyModal() {
+        const modal = document.getElementById('topo-modal');
+        const container = document.getElementById('topology-container');
+        const svg = document.getElementById('mini-topology-svg');
+        
+        container.appendChild(svg);
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        
+        if (currentSelectedHost) {
+            drawMiniTopology(currentSelectedHost);
+        }
+    }
+
+    window.addEventListener('resize', () => {
+        if (currentSelectedHost) {
+            drawMiniTopology(currentSelectedHost);
+        }
+    });
+
     function selectHost(hostId) {
         const host = hostsData[hostId];
         if (!host) return;
+
+        currentSelectedHost = host;
 
         // Toggle table row selection
         const rows = document.querySelectorAll('#inventory-table tbody tr');
@@ -578,68 +749,168 @@
     function drawMiniTopology(host) {
         const svg = document.getElementById('mini-topology-svg');
         svg.innerHTML = ''; // Clear
-        
         const width = svg.clientWidth || 250;
         const height = svg.clientHeight || 180;
-        
-        const center = { x: width / 2, y: height / 2 };
-        
-        // Center node represents the Gateway
-        // Outer node represents the currently selected host
-        const leaf = { x: width / 2, y: 30 };
-        
-        // Line Link
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", center.x);
-        line.setAttribute("y1", center.y);
-        line.setAttribute("x2", leaf.x);
-        line.setAttribute("y2", leaf.y);
-        line.setAttribute("stroke", host.status === 'ONLINE' ? '#3b82f6' : '#f43f5e');
-        line.setAttribute("stroke-width", "2");
-        if (host.status !== 'ONLINE') {
-            line.setAttribute("stroke-dasharray", "4,4");
+
+        const cx = width / 2;
+        const cy = height / 2;
+
+        // Build host list including router candidate
+        const hostEntries = Object.entries(hostsData).map(([id, h]) => Object.assign({ id }, h));
+
+        // Determine router: explicit status ROUTER, else hostname contains 'gateway', else IP .1 heuristic
+        let router = hostEntries.find(h => h.status === 'ROUTER');
+        if (!router) router = hostEntries.find(h => /gateway/i.test(h.hostname));
+        if (!router) router = hostEntries.find(h => h.ip && h.ip.split('.').pop() === '1');
+        if (!router && hostEntries.length > 0) router = Object.assign({}, hostEntries[0]);
+
+        // Create a root group to allow panning/zooming
+        const gRoot = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        gRoot.setAttribute('id', 'topo-root');
+        svg.appendChild(gRoot);
+
+        // Draw center router node
+        const routerGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const rCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        rCircle.setAttribute('cx', cx);
+        rCircle.setAttribute('cy', cy);
+        rCircle.setAttribute('r', '12');
+        rCircle.setAttribute('fill', '#6366f1');
+        rCircle.setAttribute('stroke', '#f3f4f6');
+        rCircle.setAttribute('stroke-width', '1.5');
+        routerGroup.appendChild(rCircle);
+
+        const routerLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        routerLabel.setAttribute('x', cx);
+        routerLabel.setAttribute('y', cy + 28);
+        routerLabel.setAttribute('text-anchor', 'middle');
+        routerLabel.setAttribute('fill', '#f3f4f6');
+        routerLabel.setAttribute('font-size', '9px');
+        routerLabel.setAttribute('font-family', 'Outfit');
+        routerLabel.textContent = router ? `${router.ip || router.hostname}` : 'Gateway';
+        routerGroup.appendChild(routerLabel);
+
+        if (router && router.mac) {
+            const macText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            macText.setAttribute('x', cx);
+            macText.setAttribute('y', cy + 40);
+            macText.setAttribute('text-anchor', 'middle');
+            macText.setAttribute('fill', '#9ca3af');
+            macText.setAttribute('font-size', '8px');
+            macText.setAttribute('font-family', 'Outfit');
+            macText.textContent = router.mac;
+            routerGroup.appendChild(macText);
         }
-        svg.appendChild(line);
 
-        // Center circle (Gateway)
-        const c1 = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        c1.setAttribute("cx", center.x);
-        c1.setAttribute("cy", center.y);
-        c1.setAttribute("r", "10");
-        c1.setAttribute("fill", "#6366f1");
-        c1.setAttribute("stroke", "#f3f4f6");
-        c1.setAttribute("stroke-width", "1.5");
-        svg.appendChild(c1);
+        gRoot.appendChild(routerGroup);
 
-        const t1 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t1.setAttribute("x", center.x);
-        t1.setAttribute("y", center.y + 24);
-        t1.setAttribute("text-anchor", "middle");
-        t1.setAttribute("fill", "#6b7280");
-        t1.setAttribute("font-size", "9px");
-        t1.setAttribute("font-family", "Outfit");
-        t1.textContent = "192.168.1.1 (Gateway)";
-        svg.appendChild(t1);
+        // Layout other hosts around circle, excluding router if present
+        const others = hostEntries.filter(h => router ? (h.id !== router.id) : true);
+        const total = Math.max(1, others.length);
+        const radius = Math.min(width, height) / 2 - 30;
 
-        // Leaf circle (Host)
-        const c2 = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        c2.setAttribute("cx", leaf.x);
-        c2.setAttribute("cy", leaf.y);
-        c2.setAttribute("r", "8");
-        c2.setAttribute("fill", host.status === 'ONLINE' ? '#10b981' : '#f43f5e');
-        c2.setAttribute("stroke", "#f3f4f6");
-        c2.setAttribute("stroke-width", "1.5");
-        svg.appendChild(c2);
+        // Precompute positions to place labels outside node circles to reduce overlap
+        const positions = others.map((h, idx) => {
+            const angle = (idx / total) * Math.PI * 2 - Math.PI / 2; // start at top
+            const x = cx + Math.cos(angle) * radius;
+            const y = cy + Math.sin(angle) * radius;
+            // label position slightly further out
+            const lx = cx + Math.cos(angle) * (radius + 16);
+            const ly = cy + Math.sin(angle) * (radius + 16);
+            return { h, x, y, lx, ly, angle };
+        });
 
-        const t2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        t2.setAttribute("x", leaf.x);
-        t2.setAttribute("y", leaf.y - 12);
-        t2.setAttribute("text-anchor", "middle");
-        t2.setAttribute("fill", "#f3f4f6");
-        t2.setAttribute("font-size", "10px");
-        t2.setAttribute("font-family", "Outfit");
-        t2.textContent = host.ip;
-        svg.appendChild(t2);
+        positions.forEach(pos => {
+            const h = pos.h;
+
+            // Link line
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute('x1', cx);
+            line.setAttribute('y1', cy);
+            line.setAttribute('x2', pos.x);
+            line.setAttribute('y2', pos.y);
+            line.setAttribute('stroke', h.status === 'ONLINE' ? '#3b82f6' : '#f43f5e');
+            line.setAttribute('stroke-width', h.ip === host.ip ? '3' : '1.5');
+            if (h.status !== 'ONLINE') line.setAttribute('stroke-dasharray', '4,4');
+            gRoot.appendChild(line);
+
+            // Node group
+            const node = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            node.setAttribute('data-host-id', h.id);
+            node.style.cursor = 'pointer';
+
+            const circ = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circ.setAttribute('cx', pos.x);
+            circ.setAttribute('cy', pos.y);
+            circ.setAttribute('r', h.ip === host.ip ? '9' : '7');
+            circ.setAttribute('fill', h.status === 'ONLINE' ? (h.ip === host.ip ? '#10b981' : '#60a5fa') : '#f43f5e');
+            circ.setAttribute('stroke', '#f3f4f6');
+            circ.setAttribute('stroke-width', '1');
+            node.appendChild(circ);
+
+            // Native tooltip via <title>
+            const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+            title.textContent = `${h.ip}\n${h.hostname || ''}\nMAC: ${h.mac || ''}`;
+            node.appendChild(title);
+
+            // IP label placed outward along radial direction
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute('x', pos.lx);
+            label.setAttribute('y', pos.ly);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('fill', '#f3f4f6');
+            label.setAttribute('font-size', '9px');
+            label.setAttribute('font-family', 'Outfit');
+            label.textContent = h.ip;
+            node.appendChild(label);
+
+            // MAC label below the IP label
+            const mac = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            mac.setAttribute('x', pos.lx);
+            mac.setAttribute('y', pos.ly + 12);
+            mac.setAttribute('text-anchor', 'middle');
+            mac.setAttribute('fill', '#9ca3af');
+            mac.setAttribute('font-size', '8px');
+            mac.setAttribute('font-family', 'Outfit');
+            mac.textContent = h.mac || '';
+            node.appendChild(mac);
+
+            // Click to select host
+            node.addEventListener('click', () => {
+                try { selectHost(parseInt(h.id)); } catch (e) { /* ignore */ }
+            });
+
+            gRoot.appendChild(node);
+        });
+
+        // Basic pan & zoom support
+        let scale = 1.0;
+        let tx = 0, ty = 0;
+        let dragging = false;
+        let dragStart = { x: 0, y: 0 };
+
+        function applyTransform() {
+            gRoot.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`);
+        }
+
+        svg.onwheel = (ev) => {
+            ev.preventDefault();
+            const delta = ev.deltaY > 0 ? -0.1 : 0.1;
+            scale = Math.max(0.4, Math.min(2.5, scale + delta));
+            applyTransform();
+        };
+
+        svg.onmousedown = (ev) => {
+            dragging = true;
+            dragStart = { x: ev.clientX - tx, y: ev.clientY - ty };
+        };
+        window.onmousemove = (ev) => {
+            if (!dragging) return;
+            tx = ev.clientX - dragStart.x;
+            ty = ev.clientY - dragStart.y;
+            applyTransform();
+        };
+        window.onmouseup = () => { dragging = false; };
     }
 
     // Auto-select first host on page load

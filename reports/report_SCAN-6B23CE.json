@@ -1,0 +1,22 @@
+{
+    "report_id": "SCAN-6B23CE",
+    "timestamp": "2026-06-12T21:20:01.253007",
+    "metadata": {
+        "target": "192.168.1.0/24",
+        "scan_type": "BOTH Scan (top100)",
+        "status": "COMPLETED",
+        "duration_seconds": 3.193197250366211,
+        "hosts_found": 1
+    },
+    "hosts": [
+        {
+            "ip": "192.168.1.0",
+            "hostname": "Unknown",
+            "status": "ONLINE",
+            "mac": "Unknown",
+            "response_time": "0ms",
+            "os": "Unknown",
+            "open_ports": []
+        }
+    ]
+}

@@ -1,0 +1,2 @@
+ScanID,TargetSubnet,IPAddress,Hostname,HostStatus,MACAddress,ResponseTime,OSDetected,Port,Protocol,Service,PortState,Product,Version,Banner
+SCAN-BA1B37,192.168.29.97,192.168.29.97,shinjan,ONLINE,Unknown,0.03ms,Linux/Unix,5000,tcp,Unknown,OPEN,Unknown,Unknown,
