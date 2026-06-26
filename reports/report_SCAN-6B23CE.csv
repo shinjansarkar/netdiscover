@@ -1,2 +1,0 @@
-ScanID,TargetSubnet,IPAddress,Hostname,HostStatus,MACAddress,ResponseTime,OSDetected,Port,Protocol,Service,PortState,Product,Version,Banner
-SCAN-6B23CE,192.168.1.0/24,192.168.1.0,Unknown,ONLINE,Unknown,0ms,Unknown,,,,,,,

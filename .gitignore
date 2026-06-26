@@ -1,1 +1,14 @@
-reports
+reports/
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+node_modules/
+.next/
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.local
+.env.*

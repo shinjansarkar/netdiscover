@@ -1,19 +1,37 @@
 version: '3.8'
 
 services:
-  netdiscover:
-    build: .
-    container_name: netdiscover_scanner
+  server:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: netdiscover_server
     # Run container using host network mode so ARP scans can broadcast on local interfaces.
-    # If running on macOS or Windows, host mode is not supported; in that case,
-    # port binding is fallback, but since the user is on Linux, network_mode: host is ideal!
+    # Note: On Windows/Mac, network_mode: host behaves differently. Fallback to port mapping if needed.
     network_mode: host
     restart: unless-stopped
-    # Grant net_admin capability for raw sockets (ARP broadcast)
     cap_add:
       - NET_ADMIN
     environment:
       - PORT=5000
+      # Pass the API key dynamically from the host machine's .env file into the container at runtime
+      - NETDISCOVER_API_KEY=${NETDISCOVER_API_KEY}
     volumes:
-      - ./reports:/app/reports
-      - ./netdiscover.db:/app/netdiscover.db
+      - ./server/reports:/app/reports
+      - ./server/netdiscover.db:/app/netdiscover.db
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        # Next.js embeds NEXT_PUBLIC variables during the BUILD phase.
+        # Docker Compose will read these from your host machine's .env file and pass them securely into the build.
+        - NEXT_PUBLIC_API_KEY=${NETDISCOVER_API_KEY}
+        - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:5000/api}
+    container_name: netdiscover_client
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server

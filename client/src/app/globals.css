@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brutal-bg: #EAEAEA;
+  --color-brutal-black: #111111;
+  --color-brutal-white: #FFFFFF;
+  --color-brutal-accent1: #CCFF00; /* Neon Yellow/Green */
+  --color-brutal-accent2: #FF00FF; /* Hot Pink */
+  
+  --shadow-brutal: 4px 4px 0px 0px #111111;
+  --shadow-brutal-lg: 8px 8px 0px 0px #111111;
+  
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-space-mono);
+}
+
+@layer base {
+  :root {
+    --background: var(--color-brutal-bg);
+    --foreground: var(--color-brutal-black);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .brutal-border {
+    border: 3px solid var(--color-brutal-black);
+  }
+  .brutal-shadow {
+    box-shadow: var(--shadow-brutal);
+  }
+  .brutal-shadow:active {
+    box-shadow: 2px 2px 0px 0px #111111;
+    transform: translate(2px, 2px);
+  }
+  .brutal-card {
+    background-color: var(--color-brutal-white);
+    border: 3px solid var(--color-brutal-black);
+    box-shadow: var(--shadow-brutal);
+  }
+  .brutal-btn {
+    background-color: var(--color-brutal-accent1);
+    border: 3px solid var(--color-brutal-black);
+    box-shadow: var(--shadow-brutal);
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.1s ease-in-out;
+    cursor: pointer;
+  }
+  .brutal-btn:hover {
+    background-color: var(--color-brutal-accent2);
+    color: var(--color-brutal-white);
+  }
+  .brutal-btn:active {
+    box-shadow: 0px 0px 0px 0px #111111;
+    transform: translate(4px, 4px);
+  }
+}

@@ -1,4 +1,0 @@
-ScanID,TargetSubnet,IPAddress,Hostname,HostStatus,MACAddress,ResponseTime,OSDetected,Port,Protocol,Service,PortState,Product,Version,Banner
-SCAN-751963,127.0.0.1,127.0.0.1,localhost,ONLINE,Unknown,0.03ms,Linux/Unix,631,tcp,Unknown,OPEN,Unknown,Unknown,
-SCAN-751963,127.0.0.1,127.0.0.1,localhost,ONLINE,Unknown,0.03ms,Linux/Unix,5000,tcp,Unknown,OPEN,Unknown,Unknown,
-SCAN-751963,127.0.0.1,127.0.0.1,localhost,ONLINE,Unknown,0.03ms,Linux/Unix,5432,tcp,PostgreSQL,OPEN,Unknown,Unknown,
