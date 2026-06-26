@@ -19,8 +19,8 @@ export const apiFetch = async (url: string, options: RequestInit = {}) => {
 
 export const fetcher = (url: string) => apiFetch(url);
 
-export function useDashboard() {
-  return useSWR('/dashboard', fetcher);
+export function useDashboard(options?: any) {
+  return useSWR('/dashboard', fetcher, options);
 }
 
 export function useScans() {
@@ -35,6 +35,6 @@ export function useReportContent(scanId: string | null) {
   return useSWR(scanId ? `/reports/${scanId}/content` : null, fetcher);
 }
 
-export function useLogs() {
-  return useSWR('/logs', fetcher);
+export function useLogs(options?: any) {
+  return useSWR('/logs', fetcher, options);
 }

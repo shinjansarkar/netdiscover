@@ -2,11 +2,13 @@
 
 import { useScans, apiFetch } from "@/hooks/useApi";
 import { Search } from "lucide-react";
+import { useState } from "react";
 
 import Loader from "@/components/Loader";
 
 export default function History() {
   const { data, error, isLoading, mutate } = useScans();
+  const [deleteTarget, setDeleteTarget] = useState<string | 'ALL' | null>(null);
 
   if (isLoading) return <Loader text="Loading Scan History..." />;
   if (error) return <div className="p-8 text-red-600 text-xl font-bold bg-black inline-block p-4">Error loading history</div>;
@@ -14,7 +16,6 @@ export default function History() {
   const scans = data?.scans || [];
 
   const handleDeleteAll = async () => {
-    if (!confirm("Are you sure you want to delete ALL scans? This cannot be undone.")) return;
     try {
       await apiFetch("/scans", { method: "DELETE" });
       mutate();
@@ -24,13 +25,22 @@ export default function History() {
   };
 
   const handleDelete = async (scanId: string) => {
-    if (!confirm(`Are you sure you want to delete scan ${scanId}?`)) return;
     try {
       await apiFetch(`/scans/${scanId}`, { method: "DELETE" });
       mutate();
     } catch (err) {
       console.error("Failed to delete scan", err);
     }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    if (deleteTarget === 'ALL') {
+      await handleDeleteAll();
+    } else {
+      await handleDelete(deleteTarget);
+    }
+    setDeleteTarget(null);
   };
 
   return (
@@ -42,7 +52,7 @@ export default function History() {
         </div>
         {scans.length > 0 && (
           <button 
-            onClick={handleDeleteAll}
+            onClick={() => setDeleteTarget('ALL')}
             className="brutal-btn bg-red-500 text-white hover:bg-red-600 px-6 py-3 flex items-center gap-2"
           >
             Delete All History
@@ -91,13 +101,40 @@ export default function History() {
                 <td className="p-4 font-mono font-bold border-r-[3px] border-brutal-black text-center text-xl">{scan.hosts_found || 0}</td>
                 <td className="p-4 flex gap-2">
                   <a href={`/reports?scan_id=${scan.id}`} className="brutal-btn text-sm px-4 py-2 inline-block">View Report</a>
-                  <button onClick={() => handleDelete(scan.id)} className="brutal-btn bg-red-400 hover:bg-red-500 text-sm px-4 py-2">Delete</button>
+                  <button onClick={() => setDeleteTarget(scan.id)} className="brutal-btn bg-red-400 hover:bg-red-500 text-sm px-4 py-2">Delete</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-brutal-bg brutal-card max-w-md w-full p-8 border-[4px] border-brutal-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <h2 className="text-2xl font-black uppercase mb-4 text-black">Confirm Deletion</h2>
+            <p className="text-lg font-mono mb-8 text-black">
+              {deleteTarget === 'ALL' 
+                ? "Are you sure you want to delete ALL scans? This cannot be undone."
+                : `Are you sure you want to delete scan ${deleteTarget}?`}
+            </p>
+            <div className="flex gap-4 justify-end">
+              <button 
+                onClick={() => setDeleteTarget(null)}
+                className="brutal-btn bg-white text-black hover:bg-gray-100 px-6 py-2"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="brutal-btn bg-red-500 hover:bg-red-600 text-white px-6 py-2"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
