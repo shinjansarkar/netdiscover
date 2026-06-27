@@ -43,9 +43,12 @@ export default function Sidebar() {
         })}
       </nav>
       <div className="p-4 border-t-[3px] border-brutal-black">
-        <div className="text-sm font-mono opacity-70">
+        <div className="text-sm font-mono opacity-70 mb-2">
           Backend: localhost:5000<br/>
           Status: <span className="text-green-600 font-bold">ONLINE</span>
+        </div>
+        <div className="text-xs font-mono font-bold pt-2 border-t-2 border-dashed border-brutal-black">
+          Made with ❤️ by Shinjan
         </div>
       </div>
     </aside>
