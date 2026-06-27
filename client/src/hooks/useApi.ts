@@ -3,13 +3,9 @@ import useSWR from 'swr';
 // Use the environment variable for production, fallback to local for development
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
 
-// For local testing, we hardcode the fallback key, but normally this would be process.env.NEXT_PUBLIC_API_KEY
-export const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "dev_secret_key";
-
 export const apiFetch = async (url: string, options: RequestInit = {}) => {
   const headers = {
     ...options.headers,
-    'X-API-Key': API_KEY,
     'Content-Type': 'application/json'
   };
   const res = await fetch(`${API_BASE}${url}`, { ...options, headers });

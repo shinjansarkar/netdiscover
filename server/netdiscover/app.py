@@ -19,7 +19,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)
+# Restrict CORS to only allow requests from the local frontend to prevent malicious websites (CSRF) from attacking the local API
+CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
 
 # Core instances
 db = Database()
@@ -87,29 +88,7 @@ def _get_visible_scans() -> list:
 
     return visible
 
-# Define the API Key (defaulting to dev_secret_key for local development)
-API_KEY = os.getenv("NETDISCOVER_API_KEY", "dev_secret_key")
-
-@app.before_request
-def require_api_key():
-    """
-    Enforce API Key authentication on all endpoints.
-    """
-    if request.path.startswith('/api/') or request.path.startswith('/reports/'):
-        if request.method == 'OPTIONS':
-            return
-        
-        # Bypass health check
-        if request.path == '/api/health':
-            return
-            
-        client_key = request.headers.get('X-API-Key')
-        # Also allow passing via query parameter for simple file downloads (reports)
-        if not client_key:
-            client_key = request.args.get('api_key')
-            
-        if not client_key or client_key != API_KEY:
-            return jsonify({"status": "error", "message": "Unauthorized: Invalid or missing API Key"}), 401
+# Removed require_api_key hook as per user request for purely local usage
 
 # --- API Endpoints ---
 
@@ -146,11 +125,12 @@ def api_scan_details(scan_id):
     if request.method == 'DELETE':
         success = db.delete_scan(scan_id)
         if success:
-            # Also try to remove the report file
-            json_path = os.path.join(REPORTS_DIR, f"report_{scan_id}.json")
-            if os.path.exists(json_path):
-                try: os.remove(json_path)
-                except: pass
+            # Try to remove all report file formats
+            for ext in ['.json', '.csv', '.txt']:
+                file_path = os.path.join(REPORTS_DIR, f"report_{scan_id}{ext}")
+                if os.path.exists(file_path):
+                    try: os.remove(file_path)
+                    except: pass
             return jsonify({"status": "success"})
         return jsonify({"status": "NOT_FOUND"}), 404
 
@@ -171,7 +151,7 @@ def api_scans():
         # Clean up all report files
         try:
             for filename in os.listdir(REPORTS_DIR):
-                if filename.startswith("report_") and filename.endswith(".json"):
+                if filename.startswith("report_") and (filename.endswith(".json") or filename.endswith(".csv") or filename.endswith(".txt")):
                     os.remove(os.path.join(REPORTS_DIR, filename))
         except: pass
         return jsonify({"status": "success", "deleted": count})
@@ -301,4 +281,5 @@ if __name__ == '__main__':
     # Flask app start listener
     # Ensure folders exist
     os.makedirs(REPORTS_DIR, exist_ok=True)
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    # Bind to 127.0.0.1 to ensure no one else on the local Wi-Fi can access the API
+    app.run(host='127.0.0.1', port=5000, debug=False)

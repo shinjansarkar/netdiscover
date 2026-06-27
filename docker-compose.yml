@@ -14,8 +14,6 @@ services:
       - NET_ADMIN
     environment:
       - PORT=5000
-      # Pass the API key dynamically from the host machine's .env file into the container at runtime
-      - NETDISCOVER_API_KEY=${NETDISCOVER_API_KEY}
     volumes:
       - ./server/reports:/app/reports
       - ./server/netdiscover.db:/app/netdiscover.db
@@ -27,7 +25,6 @@ services:
       args:
         # Next.js embeds NEXT_PUBLIC variables during the BUILD phase.
         # Docker Compose will read these from your host machine's .env file and pass them securely into the build.
-        - NEXT_PUBLIC_API_KEY=${NETDISCOVER_API_KEY}
         - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:5000/api}
     container_name: netdiscover_client
     restart: unless-stopped

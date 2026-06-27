@@ -34,12 +34,8 @@ Render is perfect for hosting Python Flask applications.
    - **Root Directory:** `server`
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `gunicorn run:app`
-5. **Environment Variables:**
-   Scroll down to the Environment Variables section and add your secret key:
-   - **Key:** `NETDISCOVER_API_KEY`
-   - **Value:** *(paste the 64-character hex key generated earlier)*
-6. Click **Create Web Service**. Render will build and deploy your backend. 
-7. **Copy the URL:** Once live, copy your backend URL (e.g., `https://netdiscover-backend.onrender.com`).
+5. Click **Create Web Service**. Render will build and deploy your backend. 
+6. **Copy the URL:** Once live, copy your backend URL (e.g., `https://netdiscover-backend.onrender.com`).
 
 > [!NOTE]
 > **Database Persistence:** Render's free tier uses an ephemeral file system. Because we use SQLite, your `netdiscover.db` file will be wiped out every time the Render server restarts or goes to sleep.
@@ -57,10 +53,7 @@ Vercel is the creator of Next.js and provides the best hosting experience for th
    - **Framework Preset:** `Next.js`
    - **Root Directory:** Click Edit and select `client`. *(This tells Vercel to only build the Next.js code)*.
 5. **Environment Variables:**
-   Expand the Environment Variables section and add the following two keys to connect it to your newly deployed backend:
-   
-   - **Key:** `NEXT_PUBLIC_API_KEY`
-     - **Value:** *(must exactly match the key you put in Render!)*
+   Expand the Environment Variables section and add the following key to connect it to your newly deployed backend:
    
    - **Key:** `NEXT_PUBLIC_API_BASE_URL`
      - **Value:** `https://your-render-url-here.onrender.com/api` *(Make sure you append `/api` to the end!)*
@@ -71,5 +64,3 @@ Vercel is the creator of Next.js and provides the best hosting experience for th
 
 ## 4. How They Communicate
 Because we set the `NEXT_PUBLIC_API_BASE_URL` environment variable in Vercel, your Next.js application automatically knows to stop looking at `http://localhost:5000/api` and instead route all its fetch requests across the internet to your Render URL.
-
-Because we set the `NEXT_PUBLIC_API_KEY` in Vercel, the frontend automatically attaches your secret key to the headers of every request. The Render backend intercepts the request, checks the `X-API-Key` header against its own `NETDISCOVER_API_KEY` variable, verifies they match, and grants access!
